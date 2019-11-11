@@ -10,13 +10,21 @@ body {
 	display: flex;
 }
 
-.list {
+.list-container {
 	width: 200px;
 	height: 600px;
-	background-color: green;
+	position: relative;
 	display: inline-block;
+	background-color: #ddd;
 	margin: 5px;
+}
+
+.list {
+	background-color: green;
 	background-color: #bbb;
+	position: absolute;
+	top: 0;
+	left: 0;
 }
 
 .list .title {
@@ -59,3 +67,9 @@ button {
 	margin: 5px;
 }
 
+.placeholder-list {
+	position: relative;
+	width: 200px;
+	height: 600px;
+	background-color: #333;
+}
