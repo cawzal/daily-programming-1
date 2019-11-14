@@ -1,6 +1,49 @@
+function createElement(element, name, parent=null) {
+	const el = document.createElement(element);
+	el.className = name;
+	if (parent !== null)
+		parent.appendChild(el);
+	return el;
+}
+
+function generateId() {
+	let counter = 0;
+	return function () {
+		let id = counter;
+		counter++;
+		return id;
+	}
+}
+const getId = generateId();
+
+const listsEl = document.querySelector('.lists');
 const newList = document.querySelector('.new-list');
 const addList = document.querySelector('.add');
 const inputList = document.querySelector('input');
+
+addList.addEventListener('click', (event) => {
+	const listWrapperEl = createElement('div', 'list-wrapper');
+	const listEl = createElement('div', 'list', listWrapperEl);
+	const titleWrapperEl = createElement('div', 'title-wrapper', listEl);
+	const titleEl = createElement('div', 'title', titleWrapperEl);
+	titleEl.textContent = `Title ${getId()}`;
+	const listMoveHandleEl = createElement('div', 'list-move-handle', titleWrapperEl);
+	listMoveHandleEl.textContent = 'Move';
+	const itemsEl = createElement('div', 'items', listEl);
+	
+	for (let i = 0; i < 15; i++) {
+		const itemWrapperEl = createElement('div', 'item-wrapper', itemsEl);
+		const itemEl = createElement('div', 'item', itemWrapperEl);
+		const itemTextEl = createElement('div', 'item-text', itemEl);
+		itemTextEl.textContent = getId();
+		const itemMoveHandleEl = createElement('div', 'item-move-handle', itemEl);
+		itemMoveHandleEl.textContent = 'Move';
+	}
+
+	listsEl.appendChild(listWrapperEl);
+});
+
+
 let moveTarget = null;
 let moveContainer = null;
 let dropTarget = null;
@@ -12,83 +55,80 @@ let moveItem = null;
 let dropItem = null;
 let itemPositions = [];
 
-const placeholderList = document.createElement('div');
-placeholderList.className = 'placeholder-list';
+// addList.addEventListener('click', (event) => {
+// 	const listContainer = document.createElement('div');
+// 	listContainer.className = 'list-container';
 
-addList.addEventListener('click', (event) => {
-	const listContainer = document.createElement('div');
-	listContainer.className = 'list-container';
+// 	const listDiv = document.createElement('div');
+// 	listDiv.className = 'list';
+// 	listContainer.appendChild(listDiv);
 
-	const listDiv = document.createElement('div');
-	listDiv.className = 'list';
-	listContainer.appendChild(listDiv);
+// 	const titleDiv = document.createElement('div');
+// 	titleDiv.className = 'title';
+// 	titleDiv.textContent = inputList.value || `Default ${getId()}`;
+// 	listDiv.appendChild(titleDiv);
 
-	const titleDiv = document.createElement('div');
-	titleDiv.className = 'title';
-	titleDiv.textContent = inputList.value || `Default ${getId()}`;
-	listDiv.appendChild(titleDiv);
+// 	const newItem = newList.cloneNode(true);
+// 	listDiv.appendChild(newItem);
+// 	const addItem = newItem.querySelector('.add');
+// 	const inputItem = newItem.querySelector('input');
 
-	const newItem = newList.cloneNode(true);
-	listDiv.appendChild(newItem);
-	const addItem = newItem.querySelector('.add');
-	const inputItem = newItem.querySelector('input');
+// 	addItem.addEventListener('click', (event) => {
+// 		const itemContainer = document.createElement('div');
+// 		itemContainer.className = 'item-container';
 
-	addItem.addEventListener('click', (event) => {
-		const itemContainer = document.createElement('div');
-		itemContainer.className = 'item-container';
+// 		const itemDiv = document.createElement('div');
+// 		itemDiv.textContent = inputItem.value || `Default ${getId()}`;
+// 		itemDiv.className = 'item';
+// 		itemContainer.appendChild(itemDiv);
 
-		const itemDiv = document.createElement('div');
-		itemDiv.textContent = inputItem.value || `Default ${getId()}`;
-		itemDiv.className = 'item';
-		itemContainer.appendChild(itemDiv);
+// 		itemDiv.addEventListener('mousedown', (event) => {
+// 			console.log('Item mouse down!'); // @_@
+// 			onItemDown = true;
+// 			moveItem = itemDiv;
+// 			dropItem = itemDiv.parentNode;
+// 			begin = {
+// 				mX: event.clientX,
+// 				mY: event.clientY,
+// 				bX: moveItem.parentNode.offsetLeft,
+// 				bY: moveItem.parentNode.offsetTop,
+// 			};
+// 		});
 
-		itemDiv.addEventListener('mousedown', (event) => {
-			console.log('Item mouse down!'); // @_@
-			onItemDown = true;
-			moveItem = itemDiv;
-			dropItem = itemDiv.parentNode;
-			begin = {
-				mX: event.clientX,
-				mY: event.clientY,
-				bX: moveItem.parentNode.offsetLeft,
-				bY: moveItem.parentNode.offsetTop,
-			};
-		});
+// 		const removeButton = document.createElement('button');
+// 		removeButton.textContent = 'X';
+// 		itemDiv.appendChild(removeButton);
 
-		const removeButton = document.createElement('button');
-		removeButton.textContent = 'X';
-		itemDiv.appendChild(removeButton);
+// 		removeButton.addEventListener('click', (event) => {
+// 			itemDiv.parentNode.removeChild(itemDiv);
+// 		});
 
-		removeButton.addEventListener('click', (event) => {
-			itemDiv.parentNode.removeChild(itemDiv);
-		});
+// 		newItem.insertAdjacentElement('beforebegin', itemContainer);
+// 	});
 
-		newItem.insertAdjacentElement('beforebegin', itemContainer);
-	});
+// 	listDiv.addEventListener('mousedown', (event) => {
+// 		if (onItemDown)
+// 			return;
+// 		console.log('Listmouse down!'); // @_@
+// 		moveTarget = listDiv;
+// 		dropTarget = listDiv.parentNode;
+// 		begin = {
+// 			mX: event.clientX,
+// 			mY: event.clientY,
+// 			bX: moveTarget.parentNode.offsetLeft,
+// 			bY: moveTarget.parentNode.offsetTop,
+// 		};
+// 	});
 
-	listDiv.addEventListener('mousedown', (event) => {
-		if (onItemDown)
-			return;
-		console.log('Listmouse down!'); // @_@
-		moveTarget = listDiv;
-		dropTarget = listDiv.parentNode;
-		begin = {
-			mX: event.clientX,
-			mY: event.clientY,
-			bX: moveTarget.parentNode.offsetLeft,
-			bY: moveTarget.parentNode.offsetTop,
-		};
-	});
+// 	runFunction(addItem, 'click', 15);
 
-	runFunction(addItem, 'click', 15);
-
-	newList.insertAdjacentElement('beforebegin', listContainer);
-	positions.push({
-		x: listContainer.offsetLeft,
-		y: listContainer.offsetTop,
-		ref: listContainer
-	});
-});
+// 	newList.insertAdjacentElement('beforebegin', listContainer);
+// 	positions.push({
+// 		x: listContainer.offsetLeft,
+// 		y: listContainer.offsetTop,
+// 		ref: listContainer
+// 	});
+// });
 
 document.addEventListener('mousemove', (event) => {
 	event.preventDefault();
@@ -203,12 +243,7 @@ function runFunction(el, fn, num) {
 	}
 }
 
-function generateId() {
-	let counter = 0;
-	return function () {
-		return counter++;
-	}
-}
-const getId = generateId();
+
+// const getId = generateId();
 
 runFunction(addList, 'click', 5);
