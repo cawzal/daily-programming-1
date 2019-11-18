@@ -6,60 +6,42 @@ body {
 	margin: 0;
 	padding: 0;
 	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	background-color: #ddd;
 }
 
 .lists {
 	display: flex;
-	background-color: #ccc;
-}
-
-.list-wrapper {
-	width: 200px;
-	background-color: #333;
-	padding: 5px;
+	flex-direction: row;
 }
 
 .list {
-	background-color: #bbb;
+	width: 200px;
+	background-color: #ccc;
+	cursor: pointer;
 }
 
-.list .title-wrapper {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+.list-header {
+	font-size: 2rem;
 	padding: 10px;
 }
 
-.list .title {
-	font-size: 2rem;
-	background-color: #ccc;
+.list-items {
+	background-color: #333;
 }
 
-.list .items {
-	background-color: #222;
-}
-
-.list .item-wrapper {
-	padding: 5px;
-	background-color: #444;
-}
-
-.list .item {
-	display: flex;
-	justify-content: space-between;
-	padding: 5px;
-	background-color: #ccc;
-}
-
-.list .item-text {
-	font-size: 0.8rem;
-}
-
-.list .list-move-handle,
-.list .item-move-handle {
-	padding: 2px;
-	font-size: 0.8rem;
-	cursor: pointer;
+.item {
+	padding: 10px;
 	background-color: #aaa;
+	cursor: pointer;
+}
+
+.placeholder-el {
+	color: white;
+	background-color: #333;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
