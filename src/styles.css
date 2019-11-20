@@ -21,6 +21,7 @@ body {
 	width: 200px;
 	background-color: #ccc;
 	cursor: pointer;
+	border: 1px dashed #eee;
 }
 
 .list-header {
@@ -36,6 +37,23 @@ body {
 	padding: 10px;
 	background-color: #aaa;
 	cursor: pointer;
+	border: 1px dashed #ccc;
+}
+
+.new {
+	display: flex;
+	flex-direction: column;
+}
+
+.modal {
+	position: absolute;
+	height: 100vh;
+	width: 100vw;
+	background-color: #333;
+	opacity: 0.8;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .placeholder-el {
@@ -44,4 +62,5 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	z-index: -1;
 }

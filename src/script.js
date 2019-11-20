@@ -6,9 +6,14 @@ function getCounter(initial) {
 }
 const getItemId = getCounter(51);
 const getListId = getCounter(5);
+
 const placeholderEl = document.createElement('div');
 placeholderEl.textContent = 'PLACEHOLDER';
 placeholderEl.className = 'placeholder-el item';
+
+const modalEl = document.createElement('modal');
+modalEl.textContent = 'MODAL';
+modalEl.className = 'modal';
 
 const listsEl = document.querySelector('.lists');
 const itemEls = document.querySelectorAll('.item');
@@ -20,24 +25,22 @@ const newListBtn = document.querySelector('.new');
 let dragStartData = null;
 
 function mousedownHandler(event) {
-	event.preventDefault();
-	// event.stopPropagation();
+	// event.preventDefault(); prevents focus on text inputs
 
 	if (dragStartData)
 		return;
 
-	const target = event.currentTarget; // event.target;
+	let target = event.target;
 
-	dragStartData = {
-		targetEl: target,
-		targetStartX: target.getBoundingClientRect().x,
-		targetStartY: target.getBoundingClientRect().y,
-		mouseStartX: event.clientX,
-		mouseStartY: event.clientY,
-		dragType: target.classList.contains('item') ? 'item' : 'list',
-	};
-
-	if (dragStartData.dragType === 'item') {
+	if (target.classList.contains('item')) {
+		dragStartData = {
+			targetEl: target,
+			targetStartX: target.getBoundingClientRect().x,
+			targetStartY: target.getBoundingClientRect().y,
+			mouseStartX: event.clientX,
+			mouseStartY: event.clientY,
+			dragType: 'item'
+		};
 
 		placeholderEl.style.height = `${target.getBoundingClientRect().height}px`;
 
@@ -50,26 +53,41 @@ function mousedownHandler(event) {
 
 		target.parentNode.replaceChild(placeholderEl, target);
 		document.body.appendChild(target);
+
 		return;
 	}
 
-	placeholderEl.style.height = `${target.getBoundingClientRect().height}px`;
-	placeholderEl.style.width = `${target.getBoundingClientRect().width}px`; // list only
+	if (target.classList.contains('list-header')) {
+		target = target.parentNode;
 
-	const deltaX = event.clientX - dragStartData.mouseStartX;
-	const deltaY = event.clientY - dragStartData.mouseStartY;
-	target.style.width = `${target.getBoundingClientRect().width}px`;
-	target.style.position = 'absolute';
-	target.style.left = `${dragStartData.targetStartX + deltaX}px`;
-	target.style.top = `${dragStartData.targetStartY + deltaY}px`;
+		dragStartData = {
+			targetEl: target,
+			targetStartX: target.getBoundingClientRect().x,
+			targetStartY: target.getBoundingClientRect().y,
+			mouseStartX: event.clientX,
+			mouseStartY: event.clientY,
+			dragType: 'list'
+		};
 
-	target.parentNode.replaceChild(placeholderEl, target);
-	document.body.appendChild(target);
+		placeholderEl.style.height = `${target.getBoundingClientRect().height}px`;
+		placeholderEl.style.width = `${target.getBoundingClientRect().width}px`; // list only
+
+		const deltaX = event.clientX - dragStartData.mouseStartX;
+		const deltaY = event.clientY - dragStartData.mouseStartY;
+		target.style.width = `${target.getBoundingClientRect().width}px`;
+		target.style.position = 'absolute';
+		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
+		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
+
+		target.parentNode.replaceChild(placeholderEl, target);
+		document.body.appendChild(target);
+
+		return;
+	}
 }
 
 function mousemoveHandler(event) {
 	event.preventDefault();
-	// event.stopPropagation();
 
 	if (!dragStartData)
 		return;
@@ -83,7 +101,7 @@ function mousemoveHandler(event) {
 		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 		let parentList = null;
-		listEls.forEach((el) => {
+		[...document.querySelector('.lists').children].forEach((el) => {
 			const left = el.getBoundingClientRect().x;
 			const width = el.getBoundingClientRect().width;
 			if ((left <= event.clientX) && (event.clientX <= left + width)) {
@@ -94,8 +112,10 @@ function mousemoveHandler(event) {
 		if (parentList === null)
 			return;
 
+		parentList = parentList.children[1];
 		if (parentList === placeholderEl.parentNode) {
 			const listItemEls = parentList.querySelectorAll('.item');
+			
 			let currentItem = null;
 			listItemEls.forEach((el) => {
 				const top = el.getBoundingClientRect().y;
@@ -133,6 +153,11 @@ function mousemoveHandler(event) {
 		});
 
 		if (currentItem === null) {
+			if (parentList.children.length === 0) {
+				parentList.appendChild(placeholderEl);
+				return;
+			}
+
 			if (event.clientY < (parentList.firstElementChild.getBoundingClientRect().y + parentList.firstElementChild.getBoundingClientRect().height)) {
 				parentList.insertBefore(placeholderEl, parentList.firstElementChild);
 			} else {
@@ -145,40 +170,45 @@ function mousemoveHandler(event) {
 		return;
 	}
 
-	const deltaX = event.clientX - dragStartData.mouseStartX;
-	const deltaY = event.clientY - dragStartData.mouseStartY;
-	target.style.left = `${dragStartData.targetStartX + deltaX}px`;
-	target.style.top = `${dragStartData.targetStartY + deltaY}px`;
+	if (dragStartData.dragType === 'list') {
+		const deltaX = event.clientX - dragStartData.mouseStartX;
+		const deltaY = event.clientY - dragStartData.mouseStartY;
+		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
+		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
-	const listsEl = document.querySelector('.lists');
-	let parentList = null;
-	[...listsEl.children].forEach((el) => {
-		const left = el.getBoundingClientRect().x;
-		const width = el.getBoundingClientRect().width;
-		if ((left <= event.clientX) && (event.clientX <= left + width)) {
-			parentList = el;
+		const listsEl = document.querySelector('.lists');
+		let parentList = null;
+		[...listsEl.children].forEach((el) => {
+			const left = el.getBoundingClientRect().x;
+			const width = el.getBoundingClientRect().width;
+			if ((left <= event.clientX) && (event.clientX <= left + width)) {
+				parentList = el;
+			}
+		});
+
+		if (parentList === null)
+			return;
+
+		if (parentList === placeholderEl)
+			return;
+
+		const placeholderElX = placeholderEl.getBoundingClientRect().x;
+		const currentItemX = parentList.getBoundingClientRect().x;
+
+		if (placeholderElX < currentItemX) {
+			parentList.parentNode.insertBefore(parentList, placeholderEl); // moving left towards right
+		} else {
+			parentList.parentNode.insertBefore(placeholderEl, parentList);
 		}
-	});
-
-	if (parentList === null)
 		return;
-
-	if (parentList === placeholderEl)
-		return;
-
-	const placeholderElX = placeholderEl.getBoundingClientRect().x;
-	const currentItemX = parentList.getBoundingClientRect().x;
-
-	if (placeholderElX < currentItemX) {
-		parentList.parentNode.insertBefore(parentList, placeholderEl); // moving left towards right
-	} else {
-		parentList.parentNode.insertBefore(placeholderEl, parentList);
 	}
 }
 
 function mouseupHandler(event) {
 	event.preventDefault();
-	// event.stopPropagation();
+
+	if (event.target.tagName === 'BUTTON')
+		return;
 
 	if (!dragStartData)
 		return;
@@ -192,11 +222,18 @@ function mouseupHandler(event) {
 	dragStartData = null;
 }
 
+function mouseclickHandler(event) {
+	if (event.target.tagName !== 'BUTTON')
+		return;
+
+	const target = event.target;
+	const inputEl = target.previousElementSibling;
+}
+
 function newItem() {
 	const div = document.createElement('div');
 	div.textContent = `Item ${getItemId()}`;
 	div.className = 'item';
-	div.addEventListener('mousedown', mousedownHandler);
 	return div;
 }
 
@@ -216,11 +253,9 @@ function newList() {
 	const newItemDiv = document.createElement('div');
 	const newItemBtn = document.createElement('button');
 	newItemBtn.textContent = 'Add';
-	newItemBtn.addEventListener('mouseup', addItemHandler);
 	newItemDiv.appendChild(newItemBtn);
 	listDiv.appendChild(newItemDiv);
 
-	listDiv.addEventListener('mousedown', mousedownHandler);
 	return listDiv;
 }
 
@@ -230,22 +265,18 @@ function addItemHandler(event) {
 }
 
 function addListHandler(event) {
-	listsEl.appendChild(newList());
+	const nList = newList();
+	for (let i = 0; i < 5; i++) {
+		nList.children[1].appendChild(newItem());
+	}
+	listsEl.appendChild(nList);
 }
 
-itemEls.forEach((el) => {
-	el.addEventListener('mousedown', mousedownHandler);
-});
-
-listsEls.forEach((el) => {
-	el.addEventListener('mousedown', mousedownHandler);
-});
-
+document.body.addEventListener('mousedown', mousedownHandler);
 document.body.addEventListener('mousemove', mousemoveHandler);
-document.addEventListener('mouseup', mouseupHandler);
+document.body.addEventListener('mouseup', mouseupHandler);
+document.body.addEventListener('click', mouseclickHandler);
 
-addBtns.forEach((el) => {
-	el.addEventListener('mouseup', addItemHandler);
-});
-
-newListBtn.addEventListener('click', addListHandler);
+addListHandler();
+addListHandler();
+addListHandler();
