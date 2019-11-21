@@ -4,12 +4,12 @@ function getCounter(initial) {
 		return count++;
 	}
 }
-const getItemId = getCounter(51);
-const getListId = getCounter(5);
+const getItemId = getCounter(1);
+const getListId = getCounter(1);
 
-const placeholderEl = document.createElement('div');
-placeholderEl.textContent = 'PLACEHOLDER';
-placeholderEl.className = 'placeholder-el item';
+const placeholderContainerEl = document.createElement('div');
+placeholderContainerEl.appendChild(document.createElement('div'));
+placeholderContainerEl.className = 'placeholder-el item-container';
 
 const modalEl = document.createElement('modal');
 modalEl.textContent = 'MODAL';
@@ -23,6 +23,7 @@ const addBtns = document.querySelectorAll('.list-new button');
 const newListBtn = document.querySelector('.new');
 
 let dragStartData = null;
+let editing = false;
 
 function mousedownHandler(event) {
 	// event.preventDefault(); prevents focus on text inputs
@@ -32,7 +33,8 @@ function mousedownHandler(event) {
 
 	let target = event.target;
 
-	if (target.classList.contains('item')) {
+	if (target.parentNode.classList.contains('item-container')) {
+		target = target.parentNode;
 		dragStartData = {
 			targetEl: target,
 			targetStartX: target.getBoundingClientRect().x,
@@ -42,7 +44,7 @@ function mousedownHandler(event) {
 			dragType: 'item'
 		};
 
-		placeholderEl.style.height = `${target.getBoundingClientRect().height}px`;
+		placeholderContainerEl.style.height = `${target.getBoundingClientRect().height}px`;
 
 		const deltaX = event.clientX - dragStartData.mouseStartX;
 		const deltaY = event.clientY - dragStartData.mouseStartY;
@@ -51,14 +53,14 @@ function mousedownHandler(event) {
 		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
 		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
-		target.parentNode.replaceChild(placeholderEl, target);
+		target.parentNode.replaceChild(placeholderContainerEl, target);
 		document.body.appendChild(target);
 
 		return;
 	}
 
 	if (target.classList.contains('list-header')) {
-		target = target.parentNode;
+		target = target.parentNode.parentNode;
 
 		dragStartData = {
 			targetEl: target,
@@ -69,8 +71,8 @@ function mousedownHandler(event) {
 			dragType: 'list'
 		};
 
-		placeholderEl.style.height = `${target.getBoundingClientRect().height}px`;
-		placeholderEl.style.width = `${target.getBoundingClientRect().width}px`; // list only
+		placeholderContainerEl.style.height = `${target.getBoundingClientRect().height}px`;
+		placeholderContainerEl.style.width = `${target.getBoundingClientRect().width}px`; // list only
 
 		const deltaX = event.clientX - dragStartData.mouseStartX;
 		const deltaY = event.clientY - dragStartData.mouseStartY;
@@ -79,7 +81,7 @@ function mousedownHandler(event) {
 		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
 		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
-		target.parentNode.replaceChild(placeholderEl, target);
+		target.parentNode.replaceChild(placeholderContainerEl, target);
 		document.body.appendChild(target);
 
 		return;
@@ -111,10 +113,9 @@ function mousemoveHandler(event) {
 
 		if (parentList === null)
 			return;
-
-		parentList = parentList.children[1];
-		if (parentList === placeholderEl.parentNode) {
-			const listItemEls = parentList.querySelectorAll('.item');
+		parentList = parentList.children[0].children[1];
+		if (parentList === placeholderContainerEl.parentNode) {
+			const listItemEls = parentList.querySelectorAll('.item-container');
 			
 			let currentItem = null;
 			listItemEls.forEach((el) => {
@@ -128,21 +129,22 @@ function mousemoveHandler(event) {
 			if (currentItem === null)
 				return;
 
-			if (currentItem === placeholderEl)
+			if (currentItem === placeholderContainerEl) {
 				return;
+			}
 
-			const placeholderElY = placeholderEl.getBoundingClientRect().y;
+			const placeholderContainerElY = placeholderContainerEl.getBoundingClientRect().y;
 			const currentItemY = currentItem.getBoundingClientRect().y;
-			if (currentItemY < placeholderElY) {
-				parentList.insertBefore(placeholderEl, currentItem);
+			if (currentItemY < placeholderContainerElY) {
+				parentList.insertBefore(placeholderContainerEl, currentItem);
 			} else {
-				parentList.insertBefore(currentItem, placeholderEl);
+				parentList.insertBefore(currentItem, placeholderContainerEl);
 			}
 			return;
 		}
 
-		placeholderEl.parentNode.removeChild(placeholderEl);
-		const listItemEls = parentList.querySelectorAll('.item');
+		placeholderContainerEl.parentNode.removeChild(placeholderContainerEl);
+		const listItemEls = parentList.querySelectorAll('.item-container');
 		let currentItem = null;
 		listItemEls.forEach((el) => {
 			const top = el.getBoundingClientRect().y;
@@ -154,19 +156,19 @@ function mousemoveHandler(event) {
 
 		if (currentItem === null) {
 			if (parentList.children.length === 0) {
-				parentList.appendChild(placeholderEl);
+				parentList.appendChild(placeholderContainerEl);
 				return;
 			}
 
 			if (event.clientY < (parentList.firstElementChild.getBoundingClientRect().y + parentList.firstElementChild.getBoundingClientRect().height)) {
-				parentList.insertBefore(placeholderEl, parentList.firstElementChild);
+				parentList.insertBefore(placeholderContainerEl, parentList.firstElementChild);
 			} else {
-				parentList.appendChild(placeholderEl);
+				parentList.appendChild(placeholderContainerEl);
 			}
 			return;
 		}
 
-		parentList.insertBefore(placeholderEl, currentItem);
+		parentList.insertBefore(placeholderContainerEl, currentItem);
 		return;
 	}
 
@@ -189,16 +191,16 @@ function mousemoveHandler(event) {
 		if (parentList === null)
 			return;
 
-		if (parentList === placeholderEl)
+		if (parentList === placeholderContainerEl)
 			return;
 
-		const placeholderElX = placeholderEl.getBoundingClientRect().x;
+		const placeholderContainerElX = placeholderContainerEl.getBoundingClientRect().x;
 		const currentItemX = parentList.getBoundingClientRect().x;
 
-		if (placeholderElX < currentItemX) {
-			parentList.parentNode.insertBefore(parentList, placeholderEl); // moving left towards right
+		if (placeholderContainerElX < currentItemX) {
+			parentList.parentNode.insertBefore(parentList, placeholderContainerEl); // moving left towards right
 		} else {
-			parentList.parentNode.insertBefore(placeholderEl, parentList);
+			parentList.parentNode.insertBefore(placeholderContainerEl, parentList);
 		}
 		return;
 	}
@@ -214,7 +216,7 @@ function mouseupHandler(event) {
 		return;
 
 	const target = dragStartData.targetEl;
-	placeholderEl.parentNode.replaceChild(target, placeholderEl);
+	placeholderContainerEl.parentNode.replaceChild(target, placeholderContainerEl);
 	target.style.position = 'relative';
 	target.style.left = '';
 	target.style.top = '';
@@ -223,21 +225,48 @@ function mouseupHandler(event) {
 }
 
 function mouseclickHandler(event) {
-	if (event.target.tagName !== 'BUTTON')
+	const target = event.target;
+
+	if (editing) {
+		editing = false;
+		headerEl.children[0].textContent = headerEl.children[1].children[0].value;
+		headerEl.children[1].style.display = 'none';
+		headerEl.children[0].style.display = 'block';
+		return;
+	}
+
+	if (target.tagName !== 'BUTTON')
 		return;
 
-	const target = event.target;
 	const inputEl = target.previousElementSibling;
+
+	if (target.classList.contains('add')) {
+		const nItem = newItem();
+		const parent = target.closest('.list');
+		parent.children[1].appendChild(nItem);
+		return;
+	}
+
+	if (target.classList.contains('new')) {
+		const nList = newList();
+		listsEl.appendChild(nList);
+	}
 }
 
-function newItem() {
-	const div = document.createElement('div');
-	div.textContent = `Item ${getItemId()}`;
-	div.className = 'item';
-	return div;
+function newItem(title=getItemId()) {
+	const itemContainerEl = document.createElement('div');
+	itemContainerEl.className = 'item-container';
+	const itemEl = document.createElement('div');
+	itemEl.textContent = `Item ${title}`;
+	itemEl.className = 'item';
+	itemContainerEl.appendChild(itemEl);
+	return itemContainerEl;
 }
 
 function newList() {
+	const listContainerEl = document.createElement('div');
+	listContainerEl.className = 'list-container';
+
 	const listDiv = document.createElement('div');
 	listDiv.className = 'list';
 
@@ -251,12 +280,16 @@ function newList() {
 	listDiv.appendChild(itemsDiv);
 
 	const newItemDiv = document.createElement('div');
+	const inputEl = document.createElement('input');
+	newItemDiv.appendChild(inputEl);
 	const newItemBtn = document.createElement('button');
 	newItemBtn.textContent = 'Add';
+	newItemBtn.className = 'add';
 	newItemDiv.appendChild(newItemBtn);
 	listDiv.appendChild(newItemDiv);
+	listContainerEl.appendChild(listDiv);
 
-	return listDiv;
+	return listContainerEl;
 }
 
 function addItemHandler(event) {
@@ -266,8 +299,8 @@ function addItemHandler(event) {
 
 function addListHandler(event) {
 	const nList = newList();
-	for (let i = 0; i < 5; i++) {
-		nList.children[1].appendChild(newItem());
+	for (let i = 0; i < 10; i++) {
+		nList.children[0].children[1].appendChild(newItem());
 	}
 	listsEl.appendChild(nList);
 }
@@ -277,6 +310,14 @@ document.body.addEventListener('mousemove', mousemoveHandler);
 document.body.addEventListener('mouseup', mouseupHandler);
 document.body.addEventListener('click', mouseclickHandler);
 
-addListHandler();
-addListHandler();
-addListHandler();
+for (let i = 0; i < 5; i++) {
+	addListHandler();
+}
+
+const headerEl = document.querySelector('.header');
+headerEl.addEventListener('click', (event) => {
+	event.stopPropagation();
+	editing = true;
+	headerEl.children[0].style.display = 'none';
+	headerEl.children[1].style.display = 'block';
+});
