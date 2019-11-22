@@ -1,5 +1,6 @@
 * {
 	box-sizing: border-box;
+	font-family: 'Segoe UI';
 }
 
 body {
@@ -10,19 +11,43 @@ body {
 	flex-direction: column;
 	align-items: center;
 	background-color: #46a0a9;
+	
 }
 
 .header {
-
+	align-self: flex-start;
 }
 
 .header-title {
-
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 10px;
 }
 
 .header-edit {
 	display: none;
 }
+
+.header-edit input {
+	padding: 3px 8px;
+	font-size: 14px;
+	font-weight: bold;
+	border: 2px solid #46a0a9;
+	width: 100%;
+	border-radius: 5px;
+}
+
+.bigger {
+	font-size: 18px;
+}
+
+
+.bigger input {
+	font-size: 18px;
+}
+/*.header-edit input:focus {
+	border: none;
+}*/
 
 
 .lists {
@@ -35,7 +60,7 @@ body {
 }
 
 .list {
-	width: 200px;
+	width: 240px;
 	background-color: #ade4ea;
 	cursor: pointer;
 	border-radius: 5px;
@@ -86,4 +111,8 @@ body {
 	background-color: #76ced7;
 	border-radius: 5px;
 	height: 100%;
+}
+
+input {
+	font-weight: bold;
 }

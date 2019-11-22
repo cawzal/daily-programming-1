@@ -24,6 +24,7 @@ const newListBtn = document.querySelector('.new');
 
 let dragStartData = null;
 let editing = false;
+let editingTarget = null;
 
 function mousedownHandler(event) {
 	// event.preventDefault(); prevents focus on text inputs
@@ -229,9 +230,9 @@ function mouseclickHandler(event) {
 
 	if (editing) {
 		editing = false;
-		headerEl.children[0].textContent = headerEl.children[1].children[0].value;
-		headerEl.children[1].style.display = 'none';
-		headerEl.children[0].style.display = 'block';
+		editingTarget.children[0].textContent = editingTarget.children[1].children[0].value;
+		editingTarget.children[1].style.display = 'none';
+		editingTarget.children[0].style.display = 'block';
 		return;
 	}
 
@@ -272,7 +273,22 @@ function newList() {
 
 	const headerDiv = document.createElement('div');
 	headerDiv.className = 'list-header';
-	headerDiv.textContent = `List ${getListId()}`;
+
+	const headerTitle = document.createElement('div');
+	headerTitle.className = 'header-title';
+	headerTitle.textContent = `List ${getListId()}`;
+	headerDiv.appendChild(headerTitle);
+
+	const headerEdit = document.createElement('div');
+	headerEdit.className = 'header-edit';
+
+	const headerInput = document.createElement('input');
+	headerInput.value = headerTitle.textContent;
+
+	headerEdit.appendChild(headerInput);
+	headerDiv.appendChild(headerEdit);
+
+
 	listDiv.appendChild(headerDiv);
 	
 	const itemsDiv = document.createElement('div');
@@ -317,7 +333,38 @@ for (let i = 0; i < 5; i++) {
 const headerEl = document.querySelector('.header');
 headerEl.addEventListener('click', (event) => {
 	event.stopPropagation();
+	if (editing) {
+		if (event.target === headerEl.children[1].children[0]) {
+			return;
+		}
+	}
+	
 	editing = true;
+	editingTarget = headerEl;
+	const width = headerEl.children[0].getBoundingClientRect().width;
 	headerEl.children[0].style.display = 'none';
 	headerEl.children[1].style.display = 'block';
+	headerEl.children[1].children[0].style.width = `${width}px`;
+	headerEl.addEventListener('keypress', (event) => {
+		if (event.keyCode === 13)
+			return;
+
+		const inputEl = headerEl.children[1].children[0];
+		if (inputEl.scrollWidth > inputEl.clientWidth) {
+			inputEl.style.width = `${inputEl.scrollWidth}px`;
+		}
+	});
 });
+
+const listTitleEls = document.querySelectorAll('.list-header');
+listTitleEls.forEach((el) => {
+	el.addEventListener('click', (event) => {
+		event.stopPropagation();
+		editing = true;
+		editingTarget = el;
+		el.children[0].style.display = 'none';
+		el.children[1].style.display = 'block';
+	});
+});
+
+document.body.addEventListener('keypress', (event) => {});
