@@ -24,8 +24,8 @@ body {
 	padding: 5px 10px;
 }
 
-.header-edit {
-	display: none;
+.header-title > * {
+	white-space: pre;
 }
 
 .header-edit input {
@@ -45,6 +45,13 @@ body {
 .bigger input {
 	font-size: 18px;
 }
+
+.hide, .hide * {
+	height: 0 !important;
+	border: none !important;
+	padding: 0 !important;
+}
+
 /*.header-edit input:focus {
 	border: none;
 }*/

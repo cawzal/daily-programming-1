@@ -332,27 +332,15 @@ for (let i = 0; i < 5; i++) {
 
 const headerEl = document.querySelector('.header');
 headerEl.addEventListener('click', (event) => {
-	event.stopPropagation();
-	if (editing) {
-		if (event.target === headerEl.children[1].children[0]) {
-			return;
-		}
-	}
-	
 	editing = true;
-	editingTarget = headerEl;
-	const width = headerEl.children[0].getBoundingClientRect().width;
-	headerEl.children[0].style.display = 'none';
-	headerEl.children[1].style.display = 'block';
-	headerEl.children[1].children[0].style.width = `${width}px`;
-	headerEl.addEventListener('keypress', (event) => {
-		if (event.keyCode === 13)
-			return;
+	headerEl.children[1].classList.remove('hide');
+	headerEl.children[0].classList.add('hide');
 
-		const inputEl = headerEl.children[1].children[0];
-		if (inputEl.scrollWidth > inputEl.clientWidth) {
-			inputEl.style.width = `${inputEl.scrollWidth}px`;
-		}
+	headerEl.children[1].firstElementChild.style.width = `${Math.ceil(headerEl.children[0].firstElementChild.getBoundingClientRect().width) + 20}px`;
+
+	headerEl.children[1].firstElementChild.addEventListener('input', (event) => {
+		headerEl.children[0].firstElementChild.textContent = event.target.value;
+		headerEl.children[1].firstElementChild.style.width = `${Math.ceil(headerEl.children[0].firstElementChild.getBoundingClientRect().width) + 20}px`;
 	});
 });
 
