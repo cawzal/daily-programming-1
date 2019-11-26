@@ -26,15 +26,41 @@ body {
 
 .header-title > * {
 	white-space: pre;
+	overflow-wrap: break-word;
+	overflow: hidden;
+/*	width: 100px;*/
+	display: inline-block;
 }
+
+.list .header-title > * {
+	white-space: normal !important;
+}
+
 
 .header-edit input {
 	padding: 3px 8px;
 	font-size: 14px;
 	font-weight: bold;
-	border: 2px solid #46a0a9;
+	border: 2px solid lightblue;
 	width: 100%;
 	border-radius: 5px;
+}
+
+.header-edit textarea {
+	display: inline-block;
+	padding: 0px 5px;
+	font-size: 14px;
+	font-weight: bold;
+/*	border: 2px solid red;*/
+	width: 100%;
+	border-radius: 5px;
+	resize: none;
+	border: 0;
+	overflow: hidden;
+}
+
+.header-edit textarea:focus {
+	outline: none;
 }
 
 .bigger {
@@ -75,7 +101,7 @@ body {
 
 .list-header {
 	font-size: 2rem;
-	padding: 10px;
+/*	padding: 10px;*/
 }
 
 .list-items {
@@ -122,4 +148,31 @@ body {
 
 input {
 	font-weight: bold;
+}
+
+.editing-helper-container {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 200px;
+	max-width: 200px;
+	z-index: -3;
+}
+
+.editing-helper {
+	width: 100%;
+	z-index: -3;
+	overflow-wrap: break-word;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.list .header-edit {
+	padding: 5px;
+}
+
+.list .header-title span {
+	display: block;
+	width: 100%;
+	overflow-wrap: break-word;
 }

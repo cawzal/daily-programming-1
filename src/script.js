@@ -226,32 +226,48 @@ function mouseupHandler(event) {
 }
 
 function mouseclickHandler(event) {
-	const target = event.target;
 
 	if (editing) {
 		editing = false;
-		editingTarget.children[0].textContent = editingTarget.children[1].children[0].value;
-		editingTarget.children[1].style.display = 'none';
-		editingTarget.children[0].style.display = 'block';
+
+		if (editingTarget === headerEl) {
+			headerEl.children[0].classList.remove('hide');
+			headerEl.children[1].classList.add('hide');
+		} else {
+			editingTarget.children[0].classList.remove('hide');
+			editingTarget.children[1].classList.add('hide');
+			editingTarget.children[0].firstElementChild.textContent = editingHelper.textContent;
+
+		}
 		return;
 	}
 
-	if (target.tagName !== 'BUTTON')
-		return;
+	// const target = event.target;
 
-	const inputEl = target.previousElementSibling;
+	// if (editing) {
+	// 	editing = false;
+	// 	editingTarget.children[0].textContent = editingTarget.children[1].children[0].value;
+	// 	editingTarget.children[1].style.display = 'none';
+	// 	editingTarget.children[0].style.display = 'block';
+	// 	return;
+	// }
 
-	if (target.classList.contains('add')) {
-		const nItem = newItem();
-		const parent = target.closest('.list');
-		parent.children[1].appendChild(nItem);
-		return;
-	}
+	// if (target.tagName !== 'BUTTON')
+	// 	return;
 
-	if (target.classList.contains('new')) {
-		const nList = newList();
-		listsEl.appendChild(nList);
-	}
+	// const inputEl = target.previousElementSibling;
+
+	// if (target.classList.contains('add')) {
+	// 	const nItem = newItem();
+	// 	const parent = target.closest('.list');
+	// 	parent.children[1].appendChild(nItem);
+	// 	return;
+	// }
+
+	// if (target.classList.contains('new')) {
+	// 	const nList = newList();
+	// 	listsEl.appendChild(nList);
+	// }
 }
 
 function newItem(title=getItemId()) {
@@ -276,13 +292,16 @@ function newList() {
 
 	const headerTitle = document.createElement('div');
 	headerTitle.className = 'header-title';
-	headerTitle.textContent = `List ${getListId()}`;
+
+	const headerSpan = document.createElement('span');
+	headerSpan.textContent = `List ${getListId()}`;
+	headerTitle.appendChild(headerSpan);
 	headerDiv.appendChild(headerTitle);
 
 	const headerEdit = document.createElement('div');
-	headerEdit.className = 'header-edit';
+	headerEdit.className = 'header-edit hide';
 
-	const headerInput = document.createElement('input');
+	const headerInput = document.createElement('textarea');
 	headerInput.value = headerTitle.textContent;
 
 	headerEdit.appendChild(headerInput);
@@ -332,7 +351,11 @@ for (let i = 0; i < 5; i++) {
 
 const headerEl = document.querySelector('.header');
 headerEl.addEventListener('click', (event) => {
+	event.stopPropagation();
+
 	editing = true;
+	editingTarget = headerEl;
+
 	headerEl.children[1].classList.remove('hide');
 	headerEl.children[0].classList.add('hide');
 
@@ -344,14 +367,33 @@ headerEl.addEventListener('click', (event) => {
 	});
 });
 
+const editingHelperContainer = document.createElement('div');
+editingHelperContainer.className = 'editing-helper-container';
+
+const editingHelper = document.createElement('div');
+editingHelper.className = 'editing-helper';
+editingHelperContainer.appendChild(editingHelper);
+
+document.body.appendChild(editingHelperContainer);
+
 const listTitleEls = document.querySelectorAll('.list-header');
 listTitleEls.forEach((el) => {
 	el.addEventListener('click', (event) => {
 		event.stopPropagation();
 		editing = true;
 		editingTarget = el;
-		el.children[0].style.display = 'none';
-		el.children[1].style.display = 'block';
+
+		el.children[1].classList.remove('hide');
+		el.children[0].classList.add('hide');
+
+		editingHelper.textContent = el.children[0].firstElementChild.textContent;
+		editingHelper.style.width = `${Math.ceil(el.children[1].firstElementChild.getBoundingClientRect().width)}px`;
+		el.children[1].firstElementChild.style.height = `${Math.ceil(editingHelper.getBoundingClientRect().height)}px`;
+
+		el.children[1].firstElementChild.addEventListener('input', (event) => {
+			editingHelper.textContent = event.target.value;
+			el.children[1].firstElementChild.style.height = `${Math.ceil(editingHelper.getBoundingClientRect().height)}px`;
+		});
 	});
 });
 
