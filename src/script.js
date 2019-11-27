@@ -12,7 +12,6 @@ placeholderContainerEl.appendChild(document.createElement('div'));
 placeholderContainerEl.className = 'placeholder-el item-container';
 
 const modalEl = document.createElement('modal');
-modalEl.textContent = 'MODAL';
 modalEl.className = 'modal';
 
 const listsEl = document.querySelector('.lists');
@@ -22,6 +21,8 @@ const listsEls = document.querySelectorAll('.list');
 const addBtns = document.querySelectorAll('.list-new button');
 const newListBtn = document.querySelector('.new');
 
+let potentialDrag = false;
+let dragging = false;
 let dragStartData = null;
 let editing = false;
 let editingTarget = null;
@@ -29,12 +30,13 @@ let editingTarget = null;
 function mousedownHandler(event) {
 	// event.preventDefault(); prevents focus on text inputs
 
-	if (dragStartData)
-		return;
-
 	let target = event.target;
 
+	if (target === document.body)
+		return;
+
 	if (target.parentNode.classList.contains('item-container')) {
+		potentialDrag = true;
 		target = target.parentNode;
 		dragStartData = {
 			targetEl: target,
@@ -44,25 +46,12 @@ function mousedownHandler(event) {
 			mouseStartY: event.clientY,
 			dragType: 'item'
 		};
-
-		placeholderContainerEl.style.height = `${target.getBoundingClientRect().height}px`;
-
-		const deltaX = event.clientX - dragStartData.mouseStartX;
-		const deltaY = event.clientY - dragStartData.mouseStartY;
-		target.style.width = `${target.getBoundingClientRect().width}px`;
-		target.style.position = 'absolute';
-		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
-		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
-
-		target.parentNode.replaceChild(placeholderContainerEl, target);
-		document.body.appendChild(target);
-
 		return;
 	}
 
-	if (target.classList.contains('list-header')) {
-		target = target.parentNode.parentNode;
-
+	if (target.parentNode.parentNode.classList.contains('list-header')) {
+		potentialDrag = true;
+		target = target.parentNode.parentNode.parentNode.parentNode;
 		dragStartData = {
 			targetEl: target,
 			targetStartX: target.getBoundingClientRect().x,
@@ -71,20 +60,6 @@ function mousedownHandler(event) {
 			mouseStartY: event.clientY,
 			dragType: 'list'
 		};
-
-		placeholderContainerEl.style.height = `${target.getBoundingClientRect().height}px`;
-		placeholderContainerEl.style.width = `${target.getBoundingClientRect().width}px`; // list only
-
-		const deltaX = event.clientX - dragStartData.mouseStartX;
-		const deltaY = event.clientY - dragStartData.mouseStartY;
-		target.style.width = `${target.getBoundingClientRect().width}px`;
-		target.style.position = 'absolute';
-		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
-		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
-
-		target.parentNode.replaceChild(placeholderContainerEl, target);
-		document.body.appendChild(target);
-
 		return;
 	}
 }
@@ -92,10 +67,41 @@ function mousedownHandler(event) {
 function mousemoveHandler(event) {
 	event.preventDefault();
 
-	if (!dragStartData)
+	if (!potentialDrag)
 		return;
 
 	const target = dragStartData.targetEl;
+
+	if (!dragging) {
+		dragging = true;
+
+		if (dragStartData.dragType === 'item') {
+			placeholderContainerEl.style.height = `${target.getBoundingClientRect().height}px`;
+
+			const deltaX = event.clientX - dragStartData.mouseStartX;
+			const deltaY = event.clientY - dragStartData.mouseStartY;
+			target.style.width = `${target.getBoundingClientRect().width}px`;
+			target.style.position = 'absolute';
+			target.style.left = `${dragStartData.targetStartX + deltaX}px`;
+			target.style.top = `${dragStartData.targetStartY + deltaY}px`;
+
+			target.parentNode.replaceChild(placeholderContainerEl, target);
+			document.body.appendChild(target);
+		} else {
+			placeholderContainerEl.style.height = `${target.getBoundingClientRect().height}px`;
+			placeholderContainerEl.style.width = `${target.getBoundingClientRect().width}px`; // list only
+
+			const deltaX = event.clientX - dragStartData.mouseStartX;
+			const deltaY = event.clientY - dragStartData.mouseStartY;
+			target.style.width = `${target.getBoundingClientRect().width}px`;
+			target.style.position = 'absolute';
+			target.style.left = `${dragStartData.targetStartX + deltaX}px`;
+			target.style.top = `${dragStartData.targetStartY + deltaY}px`;
+
+			target.parentNode.replaceChild(placeholderContainerEl, target);
+			document.body.appendChild(target);
+		}
+	}
 
 	if (dragStartData.dragType === 'item') {
 		const deltaX = event.clientX - dragStartData.mouseStartX;
@@ -104,7 +110,7 @@ function mousemoveHandler(event) {
 		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 		let parentList = null;
-		[...document.querySelector('.lists').children].forEach((el) => {
+		[...document.querySelector('.lists').children].slice(0, -1).forEach((el) => {
 			const left = el.getBoundingClientRect().x;
 			const width = el.getBoundingClientRect().width;
 			if ((left <= event.clientX) && (event.clientX <= left + width)) {
@@ -181,7 +187,7 @@ function mousemoveHandler(event) {
 
 		const listsEl = document.querySelector('.lists');
 		let parentList = null;
-		[...listsEl.children].forEach((el) => {
+		[...listsEl.children].slice(0, -1).forEach((el) => {
 			const left = el.getBoundingClientRect().x;
 			const width = el.getBoundingClientRect().width;
 			if ((left <= event.clientX) && (event.clientX <= left + width)) {
@@ -210,10 +216,22 @@ function mousemoveHandler(event) {
 function mouseupHandler(event) {
 	event.preventDefault();
 
+	potentialDrag = false;
+
+	if (event.target.classList.contains('item')) {
+		if (!dragging) {
+			displayModel();
+			return;
+		}
+	}
+
 	if (event.target.tagName === 'BUTTON')
 		return;
 
 	if (!dragStartData)
+		return;
+
+	if (!dragging)
 		return;
 
 	const target = dragStartData.targetEl;
@@ -223,6 +241,8 @@ function mouseupHandler(event) {
 	target.style.top = '';
 	target.style.width = '';
 	dragStartData = null;
+	dragging = false;
+	potentialDrag = false;
 }
 
 function mouseclickHandler(event) {
@@ -237,37 +257,28 @@ function mouseclickHandler(event) {
 			editingTarget.children[0].classList.remove('hide');
 			editingTarget.children[1].classList.add('hide');
 			editingTarget.children[0].firstElementChild.textContent = editingHelper.textContent;
-
+			editingTarget.removeChild(editingHelperContainer);
 		}
 		return;
 	}
 
-	// const target = event.target;
+	const target = event.target;
+	if (target.tagName !== 'BUTTON')
+		return;
 
-	// if (editing) {
-	// 	editing = false;
-	// 	editingTarget.children[0].textContent = editingTarget.children[1].children[0].value;
-	// 	editingTarget.children[1].style.display = 'none';
-	// 	editingTarget.children[0].style.display = 'block';
-	// 	return;
-	// }
+	const inputEl = target.previousElementSibling;
 
-	// if (target.tagName !== 'BUTTON')
-	// 	return;
+	if (target.classList.contains('add')) {
+		const nItem = newItem();
+		const parent = target.closest('.list');
+		parent.children[1].appendChild(nItem);
+		return;
+	}
 
-	// const inputEl = target.previousElementSibling;
-
-	// if (target.classList.contains('add')) {
-	// 	const nItem = newItem();
-	// 	const parent = target.closest('.list');
-	// 	parent.children[1].appendChild(nItem);
-	// 	return;
-	// }
-
-	// if (target.classList.contains('new')) {
-	// 	const nList = newList();
-	// 	listsEl.appendChild(nList);
-	// }
+	if (target.classList.contains('new')) {
+		const nList = newList();
+		listsEl.insertBefore(nList, listsEl.lastElementChild);
+	}
 }
 
 function newItem(title=getItemId()) {
@@ -337,7 +348,7 @@ function addListHandler(event) {
 	for (let i = 0; i < 10; i++) {
 		nList.children[0].children[1].appendChild(newItem());
 	}
-	listsEl.appendChild(nList);
+	listsEl.insertBefore(nList, listsEl.lastElementChild);
 }
 
 document.body.addEventListener('mousedown', mousedownHandler);
@@ -374,8 +385,6 @@ const editingHelper = document.createElement('div');
 editingHelper.className = 'editing-helper';
 editingHelperContainer.appendChild(editingHelper);
 
-document.body.appendChild(editingHelperContainer);
-
 const listTitleEls = document.querySelectorAll('.list-header');
 listTitleEls.forEach((el) => {
 	el.addEventListener('click', (event) => {
@@ -386,8 +395,8 @@ listTitleEls.forEach((el) => {
 		el.children[1].classList.remove('hide');
 		el.children[0].classList.add('hide');
 
+		el.appendChild(editingHelperContainer);
 		editingHelper.textContent = el.children[0].firstElementChild.textContent;
-		editingHelper.style.width = `${Math.ceil(el.children[1].firstElementChild.getBoundingClientRect().width)}px`;
 		el.children[1].firstElementChild.style.height = `${Math.ceil(editingHelper.getBoundingClientRect().height)}px`;
 
 		el.children[1].firstElementChild.addEventListener('input', (event) => {
@@ -398,3 +407,11 @@ listTitleEls.forEach((el) => {
 });
 
 document.body.addEventListener('keypress', (event) => {});
+
+function displayModel() {
+	document.body.appendChild(modalEl);
+}
+
+modalEl.addEventListener('click', (event) => {
+	document.body.removeChild(modalEl);
+});
