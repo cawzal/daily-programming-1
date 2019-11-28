@@ -7,6 +7,7 @@ body {
 	margin: 0;
 	padding: 0;
 	height: 100vh;
+	max-height: 100vh;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -36,6 +37,9 @@ body {
 	white-space: normal !important;
 }
 
+.header-edit {
+	position: relative;
+}
 
 .header-edit input {
 	padding: 3px 8px;
@@ -98,16 +102,20 @@ body {
 	background-color: #ade4ea;
 	cursor: pointer;
 	border-radius: 5px;
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
 }
 
 .list-header {
-	font-size: 2rem;
-	position: relative;
+	font-size: 0; /* causing bug at 2rem */
 /*	padding: 10px;*/
 }
 
 .list-items {
-
+	display: flex;
+	flex-direction: column;
+	overflow: auto;
 }
 
 .item-container {
@@ -158,17 +166,18 @@ input {
 	left: 0px;
 	width: 240px;
 	z-index: -3;
-	background: white;
+	background: purple;
 	border-radius: 5px;
+	font-size: 14px;
+	padding: 0 10px;
 }
 
 .editing-helper {
+	position: relative;
 	width: 100%;
-	z-index: -3;
 	overflow-wrap: break-word;
 	font-size: 14px;
 	font-weight: bold;
-	padding: 0 10px;
 }
 
 .list .header-edit {
@@ -179,4 +188,22 @@ input {
 	display: block;
 	width: 100%;
 	overflow-wrap: break-word;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ccc;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #aaa;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
 }

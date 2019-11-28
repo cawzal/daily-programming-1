@@ -257,7 +257,7 @@ function mouseclickHandler(event) {
 			editingTarget.children[0].classList.remove('hide');
 			editingTarget.children[1].classList.add('hide');
 			editingTarget.children[0].firstElementChild.textContent = editingHelper.textContent;
-			editingTarget.removeChild(editingHelperContainer);
+			editingTarget.children[1].removeChild(editingHelperContainer);
 		}
 		return;
 	}
@@ -343,9 +343,9 @@ function addItemHandler(event) {
 	parentList.children[1].appendChild(newItem());
 }
 
-function addListHandler(event) {
+function addListHandler(event, n) {
 	const nList = newList();
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < n; i++) {
 		nList.children[0].children[1].appendChild(newItem());
 	}
 	listsEl.insertBefore(nList, listsEl.lastElementChild);
@@ -357,7 +357,7 @@ document.body.addEventListener('mouseup', mouseupHandler);
 document.body.addEventListener('click', mouseclickHandler);
 
 for (let i = 0; i < 5; i++) {
-	addListHandler();
+	addListHandler(null, i % 2 === 0 ? 30 : 10);
 }
 
 const headerEl = document.querySelector('.header');
@@ -395,7 +395,7 @@ listTitleEls.forEach((el) => {
 		el.children[1].classList.remove('hide');
 		el.children[0].classList.add('hide');
 
-		el.appendChild(editingHelperContainer);
+		el.children[1].appendChild(editingHelperContainer);
 		editingHelper.textContent = el.children[0].firstElementChild.textContent;
 		el.children[1].firstElementChild.style.height = `${Math.ceil(editingHelper.getBoundingClientRect().height)}px`;
 
@@ -414,4 +414,14 @@ function displayModel() {
 
 modalEl.addEventListener('click', (event) => {
 	document.body.removeChild(modalEl);
+});
+
+const height = window.innerHeight;
+document.querySelectorAll('.list-items').forEach((el) => {
+	// el.style.maxHeight = `${height - 180}px`;
+});
+
+document.querySelectorAll('.list-items').forEach((el) => {
+	console.log(el.scrollHeight > el.clientHeight);
+	console.log(el.scrollTop);
 });
