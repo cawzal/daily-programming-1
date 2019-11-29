@@ -76,7 +76,10 @@ function mousemoveHandler(event) {
 		dragging = true;
 
 		if (dragStartData.dragType === 'item') {
-			placeholderContainerEl.style.height = `${target.getBoundingClientRect().height}px`;
+			const padding = 10;
+			console.log(target.getBoundingClientRect().height);
+			// adding height to placeholder child
+			placeholderContainerEl.firstElementChild.style.height = `${target.getBoundingClientRect().height - padding}px`;
 
 			const deltaX = event.clientX - dragStartData.mouseStartX;
 			const deltaY = event.clientY - dragStartData.mouseStartY;
@@ -88,7 +91,8 @@ function mousemoveHandler(event) {
 			target.parentNode.replaceChild(placeholderContainerEl, target);
 			document.body.appendChild(target);
 		} else {
-			placeholderContainerEl.style.height = `${target.getBoundingClientRect().height}px`;
+			const padding = 10;
+			placeholderContainerEl.style.height = `${target.firstElementChild.getBoundingClientRect().height + padding}px`;
 			placeholderContainerEl.style.width = `${target.getBoundingClientRect().width}px`; // list only
 
 			const deltaX = event.clientX - dragStartData.mouseStartX;
@@ -102,8 +106,9 @@ function mousemoveHandler(event) {
 			document.body.appendChild(target);
 		}
 	}
-
 	if (dragStartData.dragType === 'item') {
+		console.log(placeholderContainerEl.closest('.list-items'));
+		console.log(placeholderContainerEl.closest('.list-items').getBoundingClientRect());
 		const deltaX = event.clientX - dragStartData.mouseStartX;
 		const deltaY = event.clientY - dragStartData.mouseStartY;
 		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
@@ -236,10 +241,14 @@ function mouseupHandler(event) {
 
 	const target = dragStartData.targetEl;
 	placeholderContainerEl.parentNode.replaceChild(target, placeholderContainerEl);
-	target.style.position = 'relative';
-	target.style.left = '';
-	target.style.top = '';
-	target.style.width = '';
+	target.style.removeProperty('position');
+	target.style.removeProperty('left');
+	target.style.removeProperty('top');
+	target.style.removeProperty('width');
+	placeholderContainerEl.style.removeProperty('height');
+	if (dragStartData.dragType === 'item') {
+		placeholderContainerEl.firstElementChild.style.removeProperty('height');
+	}
 	dragStartData = null;
 	dragging = false;
 	potentialDrag = false;
@@ -421,7 +430,7 @@ document.querySelectorAll('.list-items').forEach((el) => {
 	// el.style.maxHeight = `${height - 180}px`;
 });
 
-document.querySelectorAll('.list-items').forEach((el) => {
-	console.log(el.scrollHeight > el.clientHeight);
-	console.log(el.scrollTop);
-});
+// document.querySelectorAll('.list-items').forEach((el) => {
+// 	console.log(el.scrollHeight > el.clientHeight);
+// 	console.log(el.scrollTop);
+// });

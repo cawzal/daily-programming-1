@@ -115,7 +115,8 @@ body {
 .list-items {
 	display: flex;
 	flex-direction: column;
-	overflow: auto;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .item-container {
@@ -146,14 +147,14 @@ body {
 }
 
 .placeholder-el {
-	z-index: -1;
-/*	padding: 5px;*/
+	padding: 0 5px 0 px;
+/*	background-color: #ccc;*/
 }
 
 .placeholder-el div {
 	background-color: #76ced7;
-	border-radius: 5px;
 	height: 100%;
+	border-radius: 5px;
 }
 
 input {
