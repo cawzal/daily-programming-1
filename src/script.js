@@ -26,6 +26,8 @@ let dragging = false;
 let dragStartData = null;
 let editing = false;
 let editingTarget = null;
+let scrollZone = '';
+let scrolling = false;
 
 function mousedownHandler(event) {
 	// event.preventDefault(); prevents focus on text inputs
@@ -77,7 +79,6 @@ function mousemoveHandler(event) {
 
 		if (dragStartData.dragType === 'item') {
 			const padding = 10;
-			console.log(target.getBoundingClientRect().height);
 			// adding height to placeholder child
 			placeholderContainerEl.firstElementChild.style.height = `${target.getBoundingClientRect().height - padding}px`;
 
@@ -106,9 +107,8 @@ function mousemoveHandler(event) {
 			document.body.appendChild(target);
 		}
 	}
+
 	if (dragStartData.dragType === 'item') {
-		console.log(placeholderContainerEl.closest('.list-items'));
-		console.log(placeholderContainerEl.closest('.list-items').getBoundingClientRect());
 		const deltaX = event.clientX - dragStartData.mouseStartX;
 		const deltaY = event.clientY - dragStartData.mouseStartY;
 		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
@@ -123,8 +123,9 @@ function mousemoveHandler(event) {
 			}
 		});
 
-		if (parentList === null)
+		if (parentList === null) // change nothing if not over any list
 			return;
+
 		parentList = parentList.children[0].children[1];
 		if (parentList === placeholderContainerEl.parentNode) {
 			const listItemEls = parentList.querySelectorAll('.item-container');
@@ -137,6 +138,30 @@ function mousemoveHandler(event) {
 					currentItem = el;
 				}
 			});
+
+			if ((parentList.clientHeight < parentList.scrollHeight)) {
+				const top = parentList.getBoundingClientRect().top;
+				const mouseY = event.clientY;
+				if ((top < mouseY) && (mouseY < top + 100)) {
+					if (parentList.scrollTop !== 0) {
+						scrollZone = 'up';
+						if (!scrolling) {
+							scrolling = true;
+							startScrollUp(parentList);
+						}
+					}
+				} else if ((top + parentList.clientHeight - 100 < mouseY) && (mouseY < top + parentList.clientHeight)) {
+					if (parentList.scrollTop + parentList.clientHeight < parentList.scrollHeight) {
+						scrollZone = 'down';
+						if (!scrolling) {
+							scrolling = true;
+							startScrollDown(parentList);
+						}
+					}
+				} else {
+					scrollZone = '';
+				}
+			}
 
 			if (currentItem === null)
 				return;
@@ -222,6 +247,11 @@ function mouseupHandler(event) {
 	event.preventDefault();
 
 	potentialDrag = false;
+
+	if (scrolling) {
+		scrolling = false;
+		scrollZone = '';
+	}
 
 	if (event.target.classList.contains('item')) {
 		if (!dragging) {
@@ -366,7 +396,7 @@ document.body.addEventListener('mouseup', mouseupHandler);
 document.body.addEventListener('click', mouseclickHandler);
 
 for (let i = 0; i < 5; i++) {
-	addListHandler(null, i % 2 === 0 ? 30 : 10);
+	addListHandler(null, i % 2 === 0 ? 50 : 10);
 }
 
 const headerEl = document.querySelector('.header');
@@ -434,3 +464,21 @@ document.querySelectorAll('.list-items').forEach((el) => {
 // 	console.log(el.scrollHeight > el.clientHeight);
 // 	console.log(el.scrollTop);
 // });
+
+function startScrollUp(elm) {
+	elm.scrollTop -= 20;
+	if (scrollZone === 'up' && elm.scrollTop !== 0) {
+		setTimeout(() => startScrollUp(elm), 50);
+	} else {
+		scrolling = false;
+	}
+}
+
+function startScrollDown(elm) {
+	elm.scrollTop += 20;
+	if (scrollZone === 'down' && (elm.scrollTop + elm.clientHeight) !== elm.scrollHeight) {
+		setTimeout(() => startScrollDown(elm), 50);
+	} else {
+		scrolling = false;
+	}
+}
