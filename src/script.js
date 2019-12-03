@@ -30,8 +30,6 @@ let scrollZone = '';
 let scrolling = false;
 
 function mousedownHandler(event) {
-	// event.preventDefault(); prevents focus on text inputs
-
 	let target = event.target;
 
 	if (target === document.body)
@@ -84,9 +82,11 @@ function mousemoveHandler(event) {
 
 			const deltaX = event.clientX - dragStartData.mouseStartX;
 			const deltaY = event.clientY - dragStartData.mouseStartY;
+			console.log(dragStartData);
+			console.log(deltaY);
 			target.style.width = `${target.getBoundingClientRect().width}px`;
 			target.style.position = 'absolute';
-			target.style.left = `${dragStartData.targetStartX + deltaX}px`;
+			target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
 			target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 			target.parentNode.replaceChild(placeholderContainerEl, target);
@@ -94,13 +94,13 @@ function mousemoveHandler(event) {
 		} else {
 			const padding = 10;
 			placeholderContainerEl.style.height = `${target.firstElementChild.getBoundingClientRect().height + padding}px`;
-			placeholderContainerEl.style.width = `${target.getBoundingClientRect().width}px`; // list only
+			placeholderContainerEl.children[0].style.width = `${target.getBoundingClientRect().width - 10}px`; // list only
 
 			const deltaX = event.clientX - dragStartData.mouseStartX;
 			const deltaY = event.clientY - dragStartData.mouseStartY;
 			target.style.width = `${target.getBoundingClientRect().width}px`;
 			target.style.position = 'absolute';
-			target.style.left = `${dragStartData.targetStartX + deltaX}px`;
+			target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
 			target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 			target.parentNode.replaceChild(placeholderContainerEl, target);
@@ -111,7 +111,7 @@ function mousemoveHandler(event) {
 	if (dragStartData.dragType === 'item') {
 		const deltaX = event.clientX - dragStartData.mouseStartX;
 		const deltaY = event.clientY - dragStartData.mouseStartY;
-		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
+		target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
 		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 		let parentList = null;
@@ -163,6 +163,9 @@ function mousemoveHandler(event) {
 				}
 			}
 
+			// if (scrolling)
+			// 	return;
+
 			if (currentItem === null)
 				return;
 
@@ -172,10 +175,16 @@ function mousemoveHandler(event) {
 
 			const placeholderContainerElY = placeholderContainerEl.getBoundingClientRect().y;
 			const currentItemY = currentItem.getBoundingClientRect().y;
-			if (currentItemY < placeholderContainerElY) {
+
+			if (currentItemY < placeholderContainerElY) {;
 				parentList.insertBefore(placeholderContainerEl, currentItem);
 			} else {
-				parentList.insertBefore(currentItem, placeholderContainerEl);
+				const sibling = currentItem.nextElementSibling;
+				if (sibling) {
+					parentList.insertBefore(placeholderContainerEl, currentItem.nextElementSibling);
+					return;
+				}
+				parentList.appendChild(placeholderContainerEl);
 			}
 			return;
 		}
@@ -212,7 +221,7 @@ function mousemoveHandler(event) {
 	if (dragStartData.dragType === 'list') {
 		const deltaX = event.clientX - dragStartData.mouseStartX;
 		const deltaY = event.clientY - dragStartData.mouseStartY;
-		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
+		target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
 		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 		const listsEl = document.querySelector('.lists');
@@ -285,7 +294,6 @@ function mouseupHandler(event) {
 }
 
 function mouseclickHandler(event) {
-
 	if (editing) {
 		editing = false;
 
@@ -395,7 +403,7 @@ document.body.addEventListener('mousemove', mousemoveHandler);
 document.body.addEventListener('mouseup', mouseupHandler);
 document.body.addEventListener('click', mouseclickHandler);
 
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 10; i++) {
 	addListHandler(null, i % 2 === 0 ? 50 : 10);
 }
 
