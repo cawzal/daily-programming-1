@@ -234,6 +234,32 @@ function mousemoveHandler(event) {
 			}
 		});
 
+		// try to put scrolling in here...
+		const scrollX = window.pageXOffset;
+		const widthX = document.body.scrollWidth;
+		const mouseX = event.clientX;
+		const pageWidth = document.body.clientWidth;
+
+		if ((0 < mouseX) && (mouseX < 100)) {
+			if (scrollX !== 0) {
+				scrollZone = 'left';
+				if (!scrolling) {
+					scrolling = true;
+					startScrollLeft();
+				}
+			}
+		} else if (((pageWidth - 100) < mouseX) && (mouseX < pageWidth)) {
+			if ((scrollX + pageWidth) !== widthX) {
+				scrollZone = 'right';
+				if (!scrolling) {
+					scrolling = true;
+					startScrollRight();
+				}
+			}
+		} else {
+			scrollZone = '';
+		}
+
 		if (parentList === null)
 			return;
 
@@ -244,8 +270,10 @@ function mousemoveHandler(event) {
 		const currentItemX = parentList.getBoundingClientRect().x;
 
 		if (placeholderContainerElX < currentItemX) {
+
 			parentList.parentNode.insertBefore(parentList, placeholderContainerEl); // moving left towards right
 		} else {
+			// problem lies with the following line
 			parentList.parentNode.insertBefore(placeholderContainerEl, parentList);
 		}
 		return;
@@ -490,3 +518,33 @@ function startScrollDown(elm) {
 		scrolling = false;
 	}
 }
+
+function startScrollLeft() {
+	// window.scrollTo(window.pageXOffset - 5, 0);
+	window.scrollTo({
+		left: 0,
+		behavior: 'smooth'
+	});
+	if (scrollZone === 'left' && window.pageXOffset !== 0) {
+		setTimeout(startScrollLeft, 25);
+	} else {
+		scrolling = false;
+	}
+}
+
+function startScrollRight() {
+	// window.scrollTo(window.pageXOffset + 5, 0);
+	window.scrollTo({
+		left: window.pageXOffset + 5,
+		behavior: 'smooth'
+	});
+	if (scrollZone === 'right' && (window.pageXOffset + document.body.clientWidth) !== document.body.scrollWidth) {
+		setTimeout(startScrollRight, 25);
+	} else {
+		scrolling = false;
+	}
+}
+
+document.body.addEventListener('resize', (event) => {
+	console.log('resized!');
+});

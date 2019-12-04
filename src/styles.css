@@ -11,6 +11,7 @@ body {
 	flex-direction: column;
 /*	align-items: center;*/
 	background-color: #46a0a9;
+	overflow: auto;
 }
 
 .header {
