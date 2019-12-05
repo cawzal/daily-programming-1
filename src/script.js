@@ -7,6 +7,8 @@ function getCounter(initial) {
 const getItemId = getCounter(1);
 const getListId = getCounter(1);
 
+const container = document.querySelector('.container');
+
 const placeholderContainerEl = document.createElement('div');
 placeholderContainerEl.appendChild(document.createElement('div'));
 placeholderContainerEl.className = 'placeholder-el item-container';
@@ -79,17 +81,18 @@ function mousemoveHandler(event) {
 			const padding = 10;
 			// adding height to placeholder child
 			placeholderContainerEl.firstElementChild.style.height = `${target.getBoundingClientRect().height - padding}px`;
+			placeholderContainerEl.firstElementChild.style.width = `${target.getBoundingClientRect().width - padding}px`;
 
 			const deltaX = event.clientX - dragStartData.mouseStartX;
 			const deltaY = event.clientY - dragStartData.mouseStartY;
-			console.log(dragStartData);
-			console.log(deltaY);
 			target.style.width = `${target.getBoundingClientRect().width}px`;
-			target.style.position = 'absolute';
+			// target.style.position = 'absolute';
 			target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
 			target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 			target.parentNode.replaceChild(placeholderContainerEl, target);
+
+			target.style.position = 'absolute';
 			document.body.appendChild(target);
 		} else {
 			const padding = 10;
@@ -99,14 +102,20 @@ function mousemoveHandler(event) {
 			const deltaX = event.clientX - dragStartData.mouseStartX;
 			const deltaY = event.clientY - dragStartData.mouseStartY;
 			target.style.width = `${target.getBoundingClientRect().width}px`;
-			target.style.position = 'absolute';
+			// target.style.position = 'absolute';
 			target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
 			target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 			target.parentNode.replaceChild(placeholderContainerEl, target);
+
+			target.style.position = 'absolute';
 			document.body.appendChild(target);
 		}
+
+		console.log(placeholderContainerEl.getBoundingClientRect());
 	}
+
+
 
 	if (dragStartData.dragType === 'item') {
 		const deltaX = event.clientX - dragStartData.mouseStartX;
@@ -235,10 +244,10 @@ function mousemoveHandler(event) {
 		});
 
 		// try to put scrolling in here...
-		const scrollX = window.pageXOffset;
-		const widthX = document.body.scrollWidth;
+		const scrollX = container.scrollLeft;
+		const widthX = container.scrollWidth;
 		const mouseX = event.clientX;
-		const pageWidth = document.body.clientWidth;
+		const pageWidth = container.clientWidth;
 
 		if ((0 < mouseX) && (mouseX < 100)) {
 			if (scrollX !== 0) {
@@ -270,10 +279,8 @@ function mousemoveHandler(event) {
 		const currentItemX = parentList.getBoundingClientRect().x;
 
 		if (placeholderContainerElX < currentItemX) {
-
 			parentList.parentNode.insertBefore(parentList, placeholderContainerEl); // moving left towards right
 		} else {
-			// problem lies with the following line
 			parentList.parentNode.insertBefore(placeholderContainerEl, parentList);
 		}
 		return;
@@ -491,16 +498,6 @@ modalEl.addEventListener('click', (event) => {
 	document.body.removeChild(modalEl);
 });
 
-const height = window.innerHeight;
-document.querySelectorAll('.list-items').forEach((el) => {
-	// el.style.maxHeight = `${height - 180}px`;
-});
-
-// document.querySelectorAll('.list-items').forEach((el) => {
-// 	console.log(el.scrollHeight > el.clientHeight);
-// 	console.log(el.scrollTop);
-// });
-
 function startScrollUp(elm) {
 	elm.scrollTop -= 20;
 	if (scrollZone === 'up' && elm.scrollTop !== 0) {
@@ -520,12 +517,8 @@ function startScrollDown(elm) {
 }
 
 function startScrollLeft() {
-	// window.scrollTo(window.pageXOffset - 5, 0);
-	window.scrollTo({
-		left: 0,
-		behavior: 'smooth'
-	});
-	if (scrollZone === 'left' && window.pageXOffset !== 0) {
+	container.scrollLeft = container.scrollLeft - 5;
+	if (scrollZone === 'left' && container.scrollLeft !== 0) {
 		setTimeout(startScrollLeft, 25);
 	} else {
 		scrolling = false;
@@ -533,18 +526,12 @@ function startScrollLeft() {
 }
 
 function startScrollRight() {
-	// window.scrollTo(window.pageXOffset + 5, 0);
-	window.scrollTo({
-		left: window.pageXOffset + 5,
-		behavior: 'smooth'
-	});
-	if (scrollZone === 'right' && (window.pageXOffset + document.body.clientWidth) !== document.body.scrollWidth) {
+	container.scrollLeft = container.scrollLeft + 5;
+	if (scrollZone === 'right' && (container.scrollLeft + container.clientWidth) !== container.scrollWidth) {
 		setTimeout(startScrollRight, 25);
 	} else {
 		scrolling = false;
 	}
 }
 
-document.body.addEventListener('resize', (event) => {
-	console.log('resized!');
-});
+// container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh

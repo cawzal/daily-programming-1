@@ -6,12 +6,11 @@
 body {
 	margin: 0;
 	padding: 0;
-	height: 90vh; /* 100vh causes veritical scrollbar to appear */
+	height: 100vh;
 	display: flex;
 	flex-direction: column;
-/*	align-items: center;*/
 	background-color: #46a0a9;
-	overflow: auto;
+	overflow: hidden;
 }
 
 .header {
@@ -90,6 +89,7 @@ body {
 .lists {
 	display: flex;
 	flex-direction: row;
+	width: 100%;
 }
 
 .list-container {
@@ -101,7 +101,7 @@ body {
 	background-color: #ade4ea;
 	cursor: pointer;
 	border-radius: 5px;
-	max-height: 80vh;
+	max-height: 90vh;
 	display: flex;
 	flex-direction: column;
 }
@@ -120,6 +120,10 @@ body {
 
 .item-container {
 	padding: 5px;
+}
+
+.list .item-container {
+	max-width: 230px; /* leave room for scrollbar? */
 }
 
 .item {
@@ -193,6 +197,10 @@ input {
   width: 10px;
 }
 
+::-webkit-scrollbar {
+  height: 10px;
+}
+
 ::-webkit-scrollbar-track {
   background: #ccc;
   border-radius: 5px;
@@ -205,4 +213,9 @@ input {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #333;
+}
+
+.container {
+	overflow: auto;
+	height: 100%;
 }
