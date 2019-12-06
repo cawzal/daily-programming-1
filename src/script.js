@@ -30,6 +30,8 @@ let editing = false;
 let editingTarget = null;
 let scrollZone = '';
 let scrolling = false;
+let addingNewItem = false;
+let addingTarget = null;
 
 function mousedownHandler(event) {
 	let target = event.target;
@@ -351,9 +353,21 @@ function mouseclickHandler(event) {
 	const inputEl = target.previousElementSibling;
 
 	if (target.classList.contains('add')) {
+		if (addingTarget !== null) {
+			addingTarget.children[2].style.display = 'block';
+		}
+		addingNewItem = true;
 		const nItem = newItem();
 		const parent = target.closest('.list');
-		parent.children[1].appendChild(nItem);
+		addingTarget = parent;
+		const button = target.closest('.new-item-div');
+		button.style.display = 'none';
+		parent.children[1].appendChild(insertNewItemInputContainer);
+		// scroll if required
+		const itemsContainer = parent.children[1];
+		if (itemsContainer.clientHeight < itemsContainer.scrollHeight) {
+			itemsContainer.scrollTop = itemsContainer.scrollHeight - itemsContainer.clientHeight;
+		}
 		return;
 	}
 
@@ -408,21 +422,15 @@ function newList() {
 	listDiv.appendChild(itemsDiv);
 
 	const newItemDiv = document.createElement('div');
-	const inputEl = document.createElement('input');
-	newItemDiv.appendChild(inputEl);
+	newItemDiv.className = 'new-item-div';
 	const newItemBtn = document.createElement('button');
-	newItemBtn.textContent = 'Add';
+	newItemBtn.textContent = 'Add Item';
 	newItemBtn.className = 'add';
 	newItemDiv.appendChild(newItemBtn);
 	listDiv.appendChild(newItemDiv);
 	listContainerEl.appendChild(listDiv);
 
 	return listContainerEl;
-}
-
-function addItemHandler(event) {
-	const parentList = event.currentTarget.closest('.list');
-	parentList.children[1].appendChild(newItem());
 }
 
 function addListHandler(event, n) {
@@ -533,5 +541,44 @@ function startScrollRight() {
 		scrolling = false;
 	}
 }
+
+const insertNewItemInputContainer = document.createElement('div');
+insertNewItemInputContainer.className = 'insert-new-item-input-container';
+
+const inputContainerTextareaDiv = document.createElement('div');
+
+const objA = document.createElement('textarea');
+objA.className = "new-textarea";
+inputContainerTextareaDiv.appendChild(objA);
+insertNewItemInputContainer.appendChild(inputContainerTextareaDiv);
+
+const inputContainerButtonsDiv = document.createElement('div');
+inputContainerButtonsDiv.className = 'new-buttons-area';
+
+const objB = document.createElement('button');
+objB.textContent = 'Add';
+objB.addEventListener('click', (event) => {
+	const list = event.target.closest('.list');
+	list.children[1].insertBefore(newItem(), insertNewItemInputContainer);
+	const itemsContainer = list.children[1];
+	if (itemsContainer.clientHeight < itemsContainer.scrollHeight) {
+		itemsContainer.scrollTop = itemsContainer.scrollHeight - itemsContainer.clientHeight;
+	}
+});
+
+const objC = document.createElement('button');
+objC.textContent = 'Cancel';
+objC.addEventListener('click', (event) => {
+	addingNewItem = false;
+	addingTarget = null;
+	const list = event.target.closest('.list');
+	list.children[1].removeChild(insertNewItemInputContainer);
+	list.children[2].style.display = 'block';
+});
+
+inputContainerButtonsDiv.appendChild(objB);
+inputContainerButtonsDiv.appendChild(objC);
+insertNewItemInputContainer.appendChild(inputContainerButtonsDiv);
+
 
 // container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh

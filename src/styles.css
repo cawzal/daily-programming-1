@@ -119,6 +119,7 @@ body {
 }
 
 .item-container {
+	font-size: 14px;
 	padding: 5px;
 }
 
@@ -218,4 +219,74 @@ input {
 .container {
 	overflow: auto;
 	height: 100%;
+}
+
+.new-item-div {
+/*	background: purple;*/
+	padding: 5px;
+	border-radius: 5px;
+}
+
+.new-item-div button {
+	border-radius: 5px;
+	width: 100%;
+	border: none;
+	padding: 5px;
+	background: #ade4ea;
+	text-transform: uppercase;
+/*	font-size: 12px;*/
+}
+
+.new-item-div button:hover {
+	width: 100%;
+	border: none;
+	background: #46a0a9;
+}
+
+.new-item-div button:focus {
+	outline: none;
+}
+
+.insert-new-item-input-container {
+	padding: 5px;
+	max-width: 230px; /* space for scrollbar */
+}
+
+
+.new-textarea {
+	font-family: 'Segoe UI';
+	font-size: 14px;
+	border: none;
+	width: 100%;
+	border-radius: 5px;
+	resize: none;
+}
+
+.new-textarea:focus {
+	outline: none;
+}
+
+.new-buttons-area {
+	display: flex;
+	justify-content: space-between;
+}
+
+.new-buttons-area button {
+	text-transform: uppercase;
+	border-radius: 5px;
+	width: 49%;
+	padding: 5px;
+	border: 0;
+}
+
+.new-buttons-area button:focus {
+	outline: none;
+}
+
+.new-buttons-area button:nth-child(1) {
+	background: lightgreen;
+}
+
+.new-buttons-area button:nth-child(2) {
+	background: pink;
 }
