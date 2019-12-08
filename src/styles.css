@@ -15,6 +15,8 @@ body {
 
 .header {
 	align-self: flex-start;
+	margin: 0;
+	padding: 0;
 }
 
 .header-title {
@@ -36,6 +38,7 @@ body {
 }
 
 .header-edit {
+	padding-bottom: 5px; /* fix */
 	position: relative;
 }
 
@@ -132,6 +135,7 @@ body {
 	cursor: pointer;
 	border-radius: 5px;
 	padding: 5px;
+	word-break: break-all;
 }
 
 .new {
@@ -170,7 +174,7 @@ input {
 	left: 0px;
 	width: 240px;
 	z-index: -3;
-	background: purple;
+/*	background: purple;*/
 	border-radius: 5px;
 	font-size: 14px;
 	padding: 0 10px;
@@ -250,6 +254,7 @@ input {
 .insert-new-item-input-container {
 	padding: 5px;
 	max-width: 230px; /* space for scrollbar */
+	position: relative;
 }
 
 
@@ -260,6 +265,9 @@ input {
 	width: 100%;
 	border-radius: 5px;
 	resize: none;
+	padding: 5px;
+	overflow: hidden;
+	height: 29px;
 }
 
 .new-textarea:focus {
@@ -289,4 +297,17 @@ input {
 
 .new-buttons-area button:nth-child(2) {
 	background: pink;
+}
+
+.helper {
+/*	top: -100px;
+	left: -100px;*/
+	padding: 5px;
+	position: absolute;
+/*	background: purple;*/
+	z-index: -1;
+	max-width: 220px;
+	word-break: break-all;
+	font-family: 'Segoe UI';
+	font-size: 14px;
 }

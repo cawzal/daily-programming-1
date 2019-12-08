@@ -292,6 +292,17 @@ function mousemoveHandler(event) {
 function mouseupHandler(event) {
 	event.preventDefault();
 
+	if (addingNewItem && !event.target.classList.contains('eh')) {
+		const list = addingTarget;
+		list.children[1].removeChild(insertNewItemInputContainer);
+		list.children[2].style.display = 'block';
+		textarea.value = '';
+		helper.textContent = '';
+		addingNewItem = false;
+		addingTarget = null;
+		return;
+	}
+
 	potentialDrag = false;
 
 	if (scrolling) {
@@ -377,17 +388,53 @@ function mouseclickHandler(event) {
 	}
 }
 
-function newItem(title=getItemId()) {
+function newItem(title=`Item ${getItemId()}`) {
 	const itemContainerEl = document.createElement('div');
 	itemContainerEl.className = 'item-container';
 	const itemEl = document.createElement('div');
-	itemEl.textContent = `Item ${title}`;
+	itemEl.textContent = title;
 	itemEl.className = 'item';
 	itemContainerEl.appendChild(itemEl);
 	return itemContainerEl;
 }
 
+function createElements(structure) {
+	if (Array.isArray(structure)) {
+		const data = structure[0].split('|');
+		const el = document.createElement(data[0]);
+		if (data[1])
+			el.className = data[1];
+		if (data[2])
+			el.textContent = data[2];
+		for (let i = 1; i < structure.length; i++) {
+			el.appendChild(createElements(structure[i]));
+		}
+		return el;
+	} else {
+		const data = structure.split('|');
+		const el = document.createElement(data[0]);
+		if (data[1])
+			el.className = data[1];
+		if (data[2])
+			el.textContent = data[2];
+		return el;
+	}
+}
+
 function newList() {
+	// const listContainerEl = createElements(
+	// 	[
+	// 		'div|list-container',[
+	// 			'div|list', [
+	// 				'div|list-header', ['div|header-title', ['span']],
+	// 				'div|header-edit hide', ['textarea']
+	// 			],
+	// 			'div|list-items',
+	// 			'div|new-item-div', ['button|add|Add Item']
+	// 		]
+	// 	]
+	// );
+
 	const listContainerEl = document.createElement('div');
 	listContainerEl.className = 'list-container';
 
@@ -498,7 +545,8 @@ listTitleEls.forEach((el) => {
 
 document.body.addEventListener('keypress', (event) => {});
 
-function displayModel() {
+function displayModel(content) {
+	modalEl.innerHTML = content;
 	document.body.appendChild(modalEl);
 }
 
@@ -547,9 +595,14 @@ insertNewItemInputContainer.className = 'insert-new-item-input-container';
 
 const inputContainerTextareaDiv = document.createElement('div');
 
-const objA = document.createElement('textarea');
-objA.className = "new-textarea";
-inputContainerTextareaDiv.appendChild(objA);
+const helper = document.createElement('div');
+helper.className = 'helper';
+
+const textarea = document.createElement('textarea');
+textarea.className = "new-textarea eh";
+
+inputContainerTextareaDiv.appendChild(textarea);
+insertNewItemInputContainer.appendChild(helper);
 insertNewItemInputContainer.appendChild(inputContainerTextareaDiv);
 
 const inputContainerButtonsDiv = document.createElement('div');
@@ -557,16 +610,27 @@ inputContainerButtonsDiv.className = 'new-buttons-area';
 
 const objB = document.createElement('button');
 objB.textContent = 'Add';
+objB.className = 'eh';
 objB.addEventListener('click', (event) => {
+	if (textarea.value === '')
+		return;
+
 	const list = event.target.closest('.list');
-	list.children[1].insertBefore(newItem(), insertNewItemInputContainer);
+
+	list.children[1].insertBefore(newItem(helper.textContent), insertNewItemInputContainer);
+	textarea.value = '';
+	helper.textContent = '';
+	textarea.style.height = '';
 	const itemsContainer = list.children[1];
 	if (itemsContainer.clientHeight < itemsContainer.scrollHeight) {
 		itemsContainer.scrollTop = itemsContainer.scrollHeight - itemsContainer.clientHeight;
 	}
+	addingNewItem = false;
+	addingTarget = null;
 });
 
 const objC = document.createElement('button');
+objC.className = 'eh';
 objC.textContent = 'Cancel';
 objC.addEventListener('click', (event) => {
 	addingNewItem = false;
@@ -574,11 +638,19 @@ objC.addEventListener('click', (event) => {
 	const list = event.target.closest('.list');
 	list.children[1].removeChild(insertNewItemInputContainer);
 	list.children[2].style.display = 'block';
+	textarea.value = '';
+	helper.textContent = '';
+	textarea.style.height = '';
 });
 
 inputContainerButtonsDiv.appendChild(objB);
 inputContainerButtonsDiv.appendChild(objC);
 insertNewItemInputContainer.appendChild(inputContainerButtonsDiv);
+
+textarea.addEventListener('keyup', (event) => {
+	helper.textContent = textarea.value;
+	textarea.style.height = `${helper.getBoundingClientRect().height}px`;
+});
 
 
 // container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh
