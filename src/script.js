@@ -9,12 +9,11 @@ const getListId = getCounter(1);
 
 const container = document.querySelector('.container');
 
-const placeholderContainerEl = document.createElement('div');
-placeholderContainerEl.appendChild(document.createElement('div'));
-placeholderContainerEl.className = 'placeholder-el item-container';
+const placeholderContainerEl = createElements(
+	['div|placeholder-el item-container', ['div']]
+);
 
-const modalEl = document.createElement('modal');
-modalEl.className = 'modal';
+const modalEl = createElements(['div|modal']);
 
 const listsEl = document.querySelector('.lists');
 const itemEls = document.querySelectorAll('.item');
@@ -89,7 +88,7 @@ function mousemoveHandler(event) {
 			const deltaY = event.clientY - dragStartData.mouseStartY;
 			target.style.width = `${target.getBoundingClientRect().width}px`;
 			// target.style.position = 'absolute';
-			target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
+			target.style.left = `${dragStartData.targetStartX + deltaX}px`;
 			target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 			target.parentNode.replaceChild(placeholderContainerEl, target);
@@ -105,7 +104,7 @@ function mousemoveHandler(event) {
 			const deltaY = event.clientY - dragStartData.mouseStartY;
 			target.style.width = `${target.getBoundingClientRect().width}px`;
 			// target.style.position = 'absolute';
-			target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
+			target.style.left = `${dragStartData.targetStartX + deltaX}px`;
 			target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 			target.parentNode.replaceChild(placeholderContainerEl, target);
@@ -113,16 +112,12 @@ function mousemoveHandler(event) {
 			target.style.position = 'absolute';
 			document.body.appendChild(target);
 		}
-
-		console.log(placeholderContainerEl.getBoundingClientRect());
 	}
-
-
 
 	if (dragStartData.dragType === 'item') {
 		const deltaX = event.clientX - dragStartData.mouseStartX;
 		const deltaY = event.clientY - dragStartData.mouseStartY;
-		target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
+		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
 		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 		let parentList = null;
@@ -133,6 +128,7 @@ function mousemoveHandler(event) {
 				parentList = el;
 			}
 		});
+		// console.log(parentList); changes correctly
 
 		if (parentList === null) // change nothing if not over any list
 			return;
@@ -149,6 +145,7 @@ function mousemoveHandler(event) {
 					currentItem = el;
 				}
 			});
+			// console.log(currentItem); problem here, remains null when over "first" list items
 
 			if ((parentList.clientHeight < parentList.scrollHeight)) {
 				const top = parentList.getBoundingClientRect().top;
@@ -232,7 +229,7 @@ function mousemoveHandler(event) {
 	if (dragStartData.dragType === 'list') {
 		const deltaX = event.clientX - dragStartData.mouseStartX;
 		const deltaY = event.clientY - dragStartData.mouseStartY;
-		target.style.left = `${window.pageXOffset + dragStartData.targetStartX + deltaX}px`;
+		target.style.left = `${dragStartData.targetStartX + deltaX}px`;
 		target.style.top = `${dragStartData.targetStartY + deltaY}px`;
 
 		const listsEl = document.querySelector('.lists');
@@ -388,96 +385,52 @@ function mouseclickHandler(event) {
 	}
 }
 
-function newItem(title=`Item ${getItemId()}`) {
-	const itemContainerEl = document.createElement('div');
-	itemContainerEl.className = 'item-container';
-	const itemEl = document.createElement('div');
-	itemEl.textContent = title;
-	itemEl.className = 'item';
-	itemContainerEl.appendChild(itemEl);
-	return itemContainerEl;
-}
-
-function createElements(structure) {
+function createElements(structure, info={}) {
 	if (Array.isArray(structure)) {
 		const data = structure[0].split('|');
 		const el = document.createElement(data[0]);
 		if (data[1])
 			el.className = data[1];
-		if (data[2])
-			el.textContent = data[2];
-		for (let i = 1; i < structure.length; i++) {
-			el.appendChild(createElements(structure[i]));
+		if (data[2]) {
+			if (data[2].includes(':')) {
+				const extra = data[2].split(':');
+				if (extra[0].startsWith('set')) {
+					const fn = `${extra[1]}()`;
+					info[extra[0].replace('set', '')] = `List ${eval(fn)}`;
+				} else {
+					el.textContent = info[extra[1]];
+				}
+			} else {
+				el.textContent = data[2];
+			}
 		}
-		return el;
-	} else {
-		const data = structure.split('|');
-		const el = document.createElement(data[0]);
-		if (data[1])
-			el.className = data[1];
-		if (data[2])
-			el.textContent = data[2];
+		for (let i = 1; i < structure.length; i++) {
+			el.appendChild(createElements(structure[i], info));
+		}
 		return el;
 	}
 }
 
 function newList() {
-	// const listContainerEl = createElements(
-	// 	[
-	// 		'div|list-container',[
-	// 			'div|list', [
-	// 				'div|list-header', ['div|header-title', ['span']],
-	// 				'div|header-edit hide', ['textarea']
-	// 			],
-	// 			'div|list-items',
-	// 			'div|new-item-div', ['button|add|Add Item']
-	// 		]
-	// 	]
-	// );
+	return createElements(
+		['div|list-container',
+			['div|list|settitle:getListId',
+				['div|list-header', ['div|header-title', ['span||:title']],
+					['div|header-edit hide', ['textarea']]
+				],
+				['div|list-items'],
+				['div|new-item-div', ['button|add|Add Item']]
+			]
+		]
+	);
+}
 
-	const listContainerEl = document.createElement('div');
-	listContainerEl.className = 'list-container';
-
-	const listDiv = document.createElement('div');
-	listDiv.className = 'list';
-
-	const headerDiv = document.createElement('div');
-	headerDiv.className = 'list-header';
-
-	const headerTitle = document.createElement('div');
-	headerTitle.className = 'header-title';
-
-	const headerSpan = document.createElement('span');
-	headerSpan.textContent = `List ${getListId()}`;
-	headerTitle.appendChild(headerSpan);
-	headerDiv.appendChild(headerTitle);
-
-	const headerEdit = document.createElement('div');
-	headerEdit.className = 'header-edit hide';
-
-	const headerInput = document.createElement('textarea');
-	headerInput.value = headerTitle.textContent;
-
-	headerEdit.appendChild(headerInput);
-	headerDiv.appendChild(headerEdit);
-
-
-	listDiv.appendChild(headerDiv);
-	
-	const itemsDiv = document.createElement('div');
-	itemsDiv.className = 'list-items';
-	listDiv.appendChild(itemsDiv);
-
-	const newItemDiv = document.createElement('div');
-	newItemDiv.className = 'new-item-div';
-	const newItemBtn = document.createElement('button');
-	newItemBtn.textContent = 'Add Item';
-	newItemBtn.className = 'add';
-	newItemDiv.appendChild(newItemBtn);
-	listDiv.appendChild(newItemDiv);
-	listContainerEl.appendChild(listDiv);
-
-	return listContainerEl;
+function newItem(title=`Item ${getItemId()}`) {
+	return createElements(
+		['div|item-container',
+			['div|item|' + title]
+		]
+	);
 }
 
 function addListHandler(event, n) {
