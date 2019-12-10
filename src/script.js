@@ -128,24 +128,39 @@ function mousemoveHandler(event) {
 				parentList = el;
 			}
 		});
-		// console.log(parentList); changes correctly
 
 		if (parentList === null) // change nothing if not over any list
 			return;
 
 		parentList = parentList.children[0].children[1];
+		
+		if (parentList !== placeholderContainerEl.parentNode) {
+			scrollZone = ''; // stop scrolling previous list
+		}
+
+		// same list
 		if (parentList === placeholderContainerEl.parentNode) {
 			const listItemEls = parentList.querySelectorAll('.item-container');
-			
 			let currentItem = null;
-			listItemEls.forEach((el) => {
+			[...listItemEls].some((el) => {
 				const top = el.getBoundingClientRect().y;
-				const height = el.getBoundingClientRect().x;
+				const height = el.getBoundingClientRect().height;
+				const half = height / 2;
 				if ((top <= event.clientY) && (event.clientY <= top + height)) {
-					currentItem = el;
+					if (placeholderContainerEl.getBoundingClientRect().y < top) {
+						if (top + half <= event.clientY) {
+							currentItem = el;
+							return true;
+						}
+					} else {
+						if (event.clientY <= top + half) {
+							currentItem = el;
+							return true;
+						}
+					}
 				}
+				return false;
 			});
-			// console.log(currentItem); problem here, remains null when over "first" list items
 
 			if ((parentList.clientHeight < parentList.scrollHeight)) {
 				const top = parentList.getBoundingClientRect().top;
@@ -197,15 +212,31 @@ function mousemoveHandler(event) {
 			return;
 		}
 
+		// change lists
 		placeholderContainerEl.parentNode.removeChild(placeholderContainerEl);
 		const listItemEls = parentList.querySelectorAll('.item-container');
 		let currentItem = null;
-		listItemEls.forEach((el) => {
+		let dir = '';
+		[...listItemEls].some((el) => {
 			const top = el.getBoundingClientRect().y;
-			const height = el.getBoundingClientRect().x;
+			const height = el.getBoundingClientRect().height;
+			const half = height / 2;
 			if ((top <= event.clientY) && (event.clientY <= top + height)) {
-				currentItem = el;
+				if (placeholderContainerEl.getBoundingClientRect().y < top) {
+					if (top + half <= event.clientY) {
+						currentItem = el;
+						dir = 'down';
+						return true;
+					}
+				} else {
+					if (event.clientY <= top + half) {
+						currentItem = el;
+						dir = 'up';
+						return true;
+					}
+				}
 			}
+			return false;
 		});
 
 		if (currentItem === null) {
@@ -214,6 +245,7 @@ function mousemoveHandler(event) {
 				return;
 			}
 
+			// not over any lists...
 			if (event.clientY < (parentList.firstElementChild.getBoundingClientRect().y + parentList.firstElementChild.getBoundingClientRect().height)) {
 				parentList.insertBefore(placeholderContainerEl, parentList.firstElementChild);
 			} else {
@@ -288,6 +320,23 @@ function mousemoveHandler(event) {
 
 function mouseupHandler(event) {
 	event.preventDefault();
+
+	if (addingNewItem && dragging) {
+		const target = dragStartData.targetEl;
+		placeholderContainerEl.parentNode.replaceChild(target, placeholderContainerEl);
+		target.style.removeProperty('position');
+		target.style.removeProperty('left');
+		target.style.removeProperty('top');
+		target.style.removeProperty('width');
+		placeholderContainerEl.style.removeProperty('height');
+		if (dragStartData.dragType === 'item') {
+			placeholderContainerEl.firstElementChild.style.removeProperty('height');
+		}
+		dragStartData = null;
+		dragging = false;
+		potentialDrag = false;
+		return;
+	}
 
 	if (addingNewItem && !event.target.classList.contains('eh')) {
 		const list = addingTarget;
@@ -600,10 +649,13 @@ inputContainerButtonsDiv.appendChild(objB);
 inputContainerButtonsDiv.appendChild(objC);
 insertNewItemInputContainer.appendChild(inputContainerButtonsDiv);
 
-textarea.addEventListener('keyup', (event) => {
+textarea.addEventListener('input', (event) => {
 	helper.textContent = textarea.value;
 	textarea.style.height = `${helper.getBoundingClientRect().height}px`;
 });
 
 
 // container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh
+
+document.querySelectorAll('.list-items')[3].appendChild(newItem('makebigger'.repeat(15)));
+document.querySelectorAll('.list-items')[2].appendChild(newItem('makebigger'.repeat(15)));
