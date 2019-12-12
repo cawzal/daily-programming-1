@@ -22,7 +22,7 @@ body {
 .header-title {
 	font-size: 14px;
 	font-weight: bold;
-	padding: 5px 10px;
+	padding: 5px;
 }
 
 .header-title > * {
@@ -31,6 +31,7 @@ body {
 	overflow: hidden;
 /*	width: 100px;*/
 	display: inline-block;
+	position: relative;
 }
 
 .list .header-title > * {
@@ -39,7 +40,17 @@ body {
 
 .header-edit {
 	padding-bottom: 5px; /* fix */
-	position: relative;
+/*	position: relative;*/
+}
+
+.header-label-edit {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.header-label-display {
+
 }
 
 .header-edit input {
@@ -78,11 +89,11 @@ body {
 	font-size: 18px;
 }
 
-.hide, .hide * {
-	height: 0 !important;
+/*.hide, .hide * {
+/*	height: 0 !important;
 	border: none !important;
 	padding: 0 !important;
-}
+}*/
 
 /*.header-edit input:focus {
 	border: none;
@@ -112,6 +123,7 @@ body {
 .list-header {
 	font-size: 0; /* causing bug at 2rem */
 /*	padding: 10px;*/
+	position: relative;
 }
 
 .list-items {
@@ -311,3 +323,4 @@ input {
 	font-family: 'Segoe UI';
 	font-size: 14px;
 }
+

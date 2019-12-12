@@ -222,18 +222,14 @@ function mousemoveHandler(event) {
 			const height = el.getBoundingClientRect().height;
 			const half = height / 2;
 			if ((top <= event.clientY) && (event.clientY <= top + height)) {
-				if (placeholderContainerEl.getBoundingClientRect().y < top) {
-					if (top + half <= event.clientY) {
-						currentItem = el;
-						dir = 'down';
-						return true;
-					}
+				if (top + half <= event.clientY) {
+					currentItem = el;
+					dir = 'below';
+					return true;
 				} else {
-					if (event.clientY <= top + half) {
-						currentItem = el;
-						dir = 'up';
-						return true;
-					}
+					currentItem = el;
+					dir = 'above';
+					return true;
 				}
 			}
 			return false;
@@ -245,16 +241,30 @@ function mousemoveHandler(event) {
 				return;
 			}
 
-			// not over any lists...
-			if (event.clientY < (parentList.firstElementChild.getBoundingClientRect().y + parentList.firstElementChild.getBoundingClientRect().height)) {
+			// not over any lists, so either above or below
+			const top = parentList.firstElementChild.getBoundingClientRect().y;
+			if (event.clientY < top) {
 				parentList.insertBefore(placeholderContainerEl, parentList.firstElementChild);
 			} else {
-				parentList.appendChild(placeholderContainerEl);
+				if (parentList.lastElementChild !== insertNewItemInputContainer) {
+					parentList.appendChild(placeholderContainerEl);
+					return;
+				}
+				parentList.insertBefore(placeholderContainerEl, parentList.lastElementChild);
 			}
 			return;
 		}
 
-		parentList.insertBefore(placeholderContainerEl, currentItem);
+		if (dir === 'above') {
+			parentList.insertBefore(placeholderContainerEl, currentItem);
+		} else if (dir === 'below') {
+			const sibling = currentItem.nextElementSibling;
+			if (sibling) {
+				parentList.insertBefore(placeholderContainerEl, sibling);
+				return;
+			}
+			parentList.appendChild(placeholderContainerEl);
+		}
 		return;
 	}
 
@@ -395,10 +405,7 @@ function mouseclickHandler(event) {
 			headerEl.children[0].classList.remove('hide');
 			headerEl.children[1].classList.add('hide');
 		} else {
-			editingTarget.children[0].classList.remove('hide');
-			editingTarget.children[1].classList.add('hide');
-			editingTarget.children[0].firstElementChild.textContent = editingHelper.textContent;
-			editingTarget.children[1].removeChild(editingHelperContainer);
+			editingTarget.lastElementChild.style.zIndex = '-1';
 		}
 		return;
 	}
@@ -501,19 +508,29 @@ for (let i = 0; i < 10; i++) {
 
 const headerEl = document.querySelector('.header');
 headerEl.addEventListener('click', (event) => {
-	event.stopPropagation();
+	const el = headerEl;
+	const titleDiv = el.children[0];
+	const titleSpan = titleDiv.firstElementChild;
 
+	const editorDiv = el.children[1];
+	const editorDivTextarea = editorDiv.firstElementChild;
+
+	editorDivTextarea.style.width = `${titleSpan.getBoundingClientRect().width}px`;
+	editorDivTextarea.style.padding = '5px';
+
+	event.stopPropagation();
 	editing = true;
 	editingTarget = headerEl;
 
-	headerEl.children[1].classList.remove('hide');
-	headerEl.children[0].classList.add('hide');
+	editorDivTextarea.value = titleSpan.textContent;
+	editorDiv.style.zIndex = '1';
 
-	headerEl.children[1].firstElementChild.style.width = `${Math.ceil(headerEl.children[0].firstElementChild.getBoundingClientRect().width) + 20}px`;
-
-	headerEl.children[1].firstElementChild.addEventListener('input', (event) => {
-		headerEl.children[0].firstElementChild.textContent = event.target.value;
-		headerEl.children[1].firstElementChild.style.width = `${Math.ceil(headerEl.children[0].firstElementChild.getBoundingClientRect().width) + 20}px`;
+	editorDivTextarea.addEventListener('input', (event) => {
+		titleSpan.textContent = editorDivTextarea.value;
+		if (editorDivTextarea.value === '') {
+			return;
+		}
+		editorDivTextarea.style.width = `${titleSpan.getBoundingClientRect().width}px`;
 	});
 });
 
@@ -526,21 +543,41 @@ editingHelperContainer.appendChild(editingHelper);
 
 const listTitleEls = document.querySelectorAll('.list-header');
 listTitleEls.forEach((el) => {
+	const titleDiv = el.children[0];
+	const titleSpan = titleDiv.firstElementChild;
+	titleSpan.style.minHeight = '19px';
+	titleSpan.style.padding = '5px';
+	titleDiv.style.paddingRight = '15px';
+
+	const editorDiv = el.children[1];
+	const editorDivTextarea = editorDiv.firstElementChild;
+
+	editorDiv.style.position = 'absolute';
+	editorDiv.style.left = '0';
+	editorDiv.style.top = '0';
+	editorDiv.style.zIndex = '-1';
+	editorDiv.style.padding = '5px';
+	editorDiv.style.paddingRight = '15px';
+	editorDiv.style.width = '100%';
+
+	editorDivTextarea.style.height = `${titleSpan.getBoundingClientRect().height}px`;
+	editorDivTextarea.style.width = '100%';
+	editorDivTextarea.style.padding = '5px';
+
 	el.addEventListener('click', (event) => {
 		event.stopPropagation();
 		editing = true;
 		editingTarget = el;
 
-		el.children[1].classList.remove('hide');
-		el.children[0].classList.add('hide');
+		editorDivTextarea.value = titleSpan.textContent;
+		editorDiv.style.zIndex = '1';
 
-		el.children[1].appendChild(editingHelperContainer);
-		editingHelper.textContent = el.children[0].firstElementChild.textContent;
-		el.children[1].firstElementChild.style.height = `${Math.ceil(editingHelper.getBoundingClientRect().height)}px`;
-
-		el.children[1].firstElementChild.addEventListener('input', (event) => {
-			editingHelper.textContent = event.target.value;
-			el.children[1].firstElementChild.style.height = `${Math.ceil(editingHelper.getBoundingClientRect().height)}px`;
+		editorDivTextarea.addEventListener('input', (event) => {
+			titleSpan.textContent = editorDivTextarea.value;
+			if (editorDivTextarea.value === '') {
+				return;
+			}
+			editorDivTextarea.style.height = `${titleSpan.getBoundingClientRect().height}px`;
 		});
 	});
 });
@@ -657,5 +694,8 @@ textarea.addEventListener('input', (event) => {
 
 // container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh
 
-document.querySelectorAll('.list-items')[3].appendChild(newItem('makebigger'.repeat(15)));
-document.querySelectorAll('.list-items')[2].appendChild(newItem('makebigger'.repeat(15)));
+document.querySelectorAll('.list-items')[3].appendChild(newItem('makelarge'.repeat(20)));
+document.querySelectorAll('.list-items')[2].appendChild(newItem('makelarge'.repeat(20)));
+document.querySelectorAll('.list-items')[1].appendChild(newItem('makemedium'.repeat(6)));
+document.querySelectorAll('.list-items')[3].appendChild(newItem('makemedium'.repeat(6)));
+document.querySelectorAll('.list-items')[4].appendChild(newItem('makemedium'.repeat(6)));
