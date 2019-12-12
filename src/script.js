@@ -35,6 +35,8 @@ let addingTarget = null;
 function mousedownHandler(event) {
 	let target = event.target;
 
+	console.log(`mousedown: ${target}`);
+
 	if (target === document.body)
 		return;
 
@@ -69,6 +71,8 @@ function mousedownHandler(event) {
 
 function mousemoveHandler(event) {
 	event.preventDefault();
+
+	console.log(`mousemove: ${event.target}`); // move event prevents click from firing
 
 	if (!potentialDrag)
 		return;
@@ -331,6 +335,8 @@ function mousemoveHandler(event) {
 function mouseupHandler(event) {
 	event.preventDefault();
 
+	console.log(`mouseup: ${event.target}`);
+
 	if (addingNewItem && dragging) {
 		const target = dragStartData.targetEl;
 		placeholderContainerEl.parentNode.replaceChild(target, placeholderContainerEl);
@@ -368,7 +374,7 @@ function mouseupHandler(event) {
 
 	if (event.target.classList.contains('item')) {
 		if (!dragging) {
-			displayModel();
+			displayModel(itemDisplayInformationContainer);
 			return;
 		}
 	}
@@ -398,12 +404,14 @@ function mouseupHandler(event) {
 }
 
 function mouseclickHandler(event) {
+
+	console.log(`mouseclick: ${event.target}`);
+
 	if (editing) {
 		editing = false;
 
 		if (editingTarget === headerEl) {
-			headerEl.children[0].classList.remove('hide');
-			headerEl.children[1].classList.add('hide');
+			editingTarget.lastElementChild.style.zIndex = '-1';
 		} else {
 			editingTarget.lastElementChild.style.zIndex = '-1';
 		}
@@ -472,7 +480,7 @@ function newList() {
 		['div|list-container',
 			['div|list|settitle:getListId',
 				['div|list-header', ['div|header-title', ['span||:title']],
-					['div|header-edit hide', ['textarea']]
+					['div|header-edit', ['textarea']]
 				],
 				['div|list-items'],
 				['div|new-item-div', ['button|add|Add Item']]
@@ -507,7 +515,7 @@ for (let i = 0; i < 10; i++) {
 }
 
 const headerEl = document.querySelector('.header');
-headerEl.addEventListener('click', (event) => {
+{
 	const el = headerEl;
 	const titleDiv = el.children[0];
 	const titleSpan = titleDiv.firstElementChild;
@@ -516,7 +524,21 @@ headerEl.addEventListener('click', (event) => {
 	const editorDivTextarea = editorDiv.firstElementChild;
 
 	editorDivTextarea.style.width = `${titleSpan.getBoundingClientRect().width}px`;
-	editorDivTextarea.style.padding = '5px';
+}
+
+headerEl.addEventListener('click', (event) => {
+	if (editing && editingTarget !== headerEl) {
+		editingTarget.lastElementChild.style.zIndex = '-1';
+	}
+
+	const el = headerEl;
+	const titleDiv = el.children[0];
+	const titleSpan = titleDiv.firstElementChild;
+
+	const editorDiv = el.children[1];
+	const editorDivTextarea = editorDiv.firstElementChild;
+
+	editorDivTextarea.style.width = `${titleSpan.getBoundingClientRect().width}px`;
 
 	event.stopPropagation();
 	editing = true;
@@ -524,6 +546,8 @@ headerEl.addEventListener('click', (event) => {
 
 	editorDivTextarea.value = titleSpan.textContent;
 	editorDiv.style.zIndex = '1';
+	editorDivTextarea.focus();
+	editorDivTextarea.setSelectionRange(-1, -1);
 
 	editorDivTextarea.addEventListener('input', (event) => {
 		titleSpan.textContent = editorDivTextarea.value;
@@ -545,32 +569,26 @@ const listTitleEls = document.querySelectorAll('.list-header');
 listTitleEls.forEach((el) => {
 	const titleDiv = el.children[0];
 	const titleSpan = titleDiv.firstElementChild;
-	titleSpan.style.minHeight = '19px';
-	titleSpan.style.padding = '5px';
-	titleDiv.style.paddingRight = '15px';
-
 	const editorDiv = el.children[1];
 	const editorDivTextarea = editorDiv.firstElementChild;
 
-	editorDiv.style.position = 'absolute';
-	editorDiv.style.left = '0';
-	editorDiv.style.top = '0';
-	editorDiv.style.zIndex = '-1';
-	editorDiv.style.padding = '5px';
-	editorDiv.style.paddingRight = '15px';
-	editorDiv.style.width = '100%';
-
 	editorDivTextarea.style.height = `${titleSpan.getBoundingClientRect().height}px`;
-	editorDivTextarea.style.width = '100%';
-	editorDivTextarea.style.padding = '5px';
 
 	el.addEventListener('click', (event) => {
+
+		console.log(`list click: ${event.target}`);
+
+		if (editing && editingTarget !== el) {
+			editingTarget.lastElementChild.style.zIndex = '-1';
+		}
+
 		event.stopPropagation();
 		editing = true;
 		editingTarget = el;
 
 		editorDivTextarea.value = titleSpan.textContent;
 		editorDiv.style.zIndex = '1';
+		editorDivTextarea.focus();
 
 		editorDivTextarea.addEventListener('input', (event) => {
 			titleSpan.textContent = editorDivTextarea.value;
@@ -585,11 +603,13 @@ listTitleEls.forEach((el) => {
 document.body.addEventListener('keypress', (event) => {});
 
 function displayModel(content) {
-	modalEl.innerHTML = content;
+	modalEl.appendChild(content);
 	document.body.appendChild(modalEl);
 }
 
 modalEl.addEventListener('click', (event) => {
+	if (event.target !== modalEl)
+		return;
 	document.body.removeChild(modalEl);
 });
 
@@ -699,3 +719,11 @@ document.querySelectorAll('.list-items')[2].appendChild(newItem('makelarge'.repe
 document.querySelectorAll('.list-items')[1].appendChild(newItem('makemedium'.repeat(6)));
 document.querySelectorAll('.list-items')[3].appendChild(newItem('makemedium'.repeat(6)));
 document.querySelectorAll('.list-items')[4].appendChild(newItem('makemedium'.repeat(6)));
+
+const itemDisplayInformationContainer = createElements(
+	['div|item-display-container',
+		['div|item-header', ['div|item-header-display', ['span']],
+			['div|item-header-edit', ['textarea']]
+		]
+	]
+);

@@ -15,15 +15,12 @@ body {
 
 .header {
 	align-self: flex-start;
-	margin: 0;
+	margin: 5px;
 	padding: 0;
+	position: relative;
 }
 
-.header-title {
-	font-size: 14px;
-	font-weight: bold;
-	padding: 5px;
-}
+
 
 .header-title > * {
 	white-space: pre;
@@ -43,15 +40,40 @@ body {
 /*	position: relative;*/
 }
 
-.header-label-edit {
+.header .header-label-display {
+
+}
+
+.header .header-label-display div {
+/*	border-radius: 5px;*/
+	padding: 5px;
+	font-weight: bold;
+	background-color: #46a0a9;
+}
+
+.header .header-label-display div:hover {
+	border-radius: 5px;
+	background: #ade4ea;
+}
+
+.header .header-label-edit {
 	position: absolute;
 	top: 0;
 	left: 0;
+	z-index: -1;
 }
 
-.header-label-display {
-
+.header .header-label-edit input {
+	border-radius: 5px;
+	border: none;
+	padding: 5px;
 }
+
+.header .header-label-edit input:focus {
+	border: 2px solid #ade4ea;
+	padding: 3px;
+}
+
 
 .header-edit input {
 	padding: 3px 8px;
@@ -89,17 +111,6 @@ body {
 	font-size: 18px;
 }
 
-/*.hide, .hide * {
-/*	height: 0 !important;
-	border: none !important;
-	padding: 0 !important;
-}*/
-
-/*.header-edit input:focus {
-	border: none;
-}*/
-
-
 .lists {
 	display: flex;
 	flex-direction: row;
@@ -120,11 +131,7 @@ body {
 	flex-direction: column;
 }
 
-.list-header {
-	font-size: 0; /* causing bug at 2rem */
-/*	padding: 10px;*/
-	position: relative;
-}
+
 
 .list-items {
 	display: flex;
@@ -324,3 +331,52 @@ input {
 	font-size: 14px;
 }
 
+
+.list-header {
+	position: relative;
+}
+
+.list-header .header-title {
+	padding: 5px;
+}
+
+.list-header .header-title span {
+	font-size: 14px;
+	font-weight: bold;
+	min-height: 19px;
+	padding: 5px;
+	border-radius: 5px;
+}
+
+.list-header .header-title span:hover {
+	background-color: #46a0a9;
+}
+
+.list-header .header-edit {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: -1;
+	width: 100%;
+}
+
+.list-header .header-edit textarea {
+	font-family: 'Segoe UI';
+	width: 100%;
+	height: 19px;
+	padding: 5px;
+}
+
+.list-header .header-edit textarea:focus {
+	border: 2px solid #46a0a9;
+	padding: 3px;
+}
+
+.item-display-container {
+	width: 500px;
+	border: 2px solid #333;
+	border-radius: 5px;
+	opacity: 1;
+	background-color: #888;
+	padding: 5px;
+}
