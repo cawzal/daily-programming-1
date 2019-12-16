@@ -31,11 +31,12 @@ let scrollZone = '';
 let scrolling = false;
 let addingNewItem = false;
 let addingTarget = null;
+let editingItemTarget = null;
 
 function mousedownHandler(event) {
 	let target = event.target;
 
-	console.log(`mousedown: ${target}`);
+	// console.log(`mousedown: ${target}`);
 
 	if (target === document.body)
 		return;
@@ -72,7 +73,8 @@ function mousedownHandler(event) {
 function mousemoveHandler(event) {
 	event.preventDefault();
 
-	console.log(`mousemove: ${event.target}`); // move event prevents click from firing
+ 	// move event prevents click from firing, see SO topic regarding bug
+	// console.log(`mousemove: ${event.target}`);
 
 	if (!potentialDrag)
 		return;
@@ -335,7 +337,7 @@ function mousemoveHandler(event) {
 function mouseupHandler(event) {
 	event.preventDefault();
 
-	console.log(`mouseup: ${event.target}`);
+	// console.log(`mouseup: ${event.target}`);
 
 	if (addingNewItem && dragging) {
 		const target = dragStartData.targetEl;
@@ -374,7 +376,9 @@ function mouseupHandler(event) {
 
 	if (event.target.classList.contains('item')) {
 		if (!dragging) {
-			displayModel(itemDisplayInformationContainer);
+			editingItemTarget = event.target;
+			const text = editingItemTarget.textContent;
+			displayModel(itemDisplayInformationContainer, text);
 			return;
 		}
 	}
@@ -405,7 +409,7 @@ function mouseupHandler(event) {
 
 function mouseclickHandler(event) {
 
-	console.log(`mouseclick: ${event.target}`);
+	// console.log(`mouseclick: ${event.target}`);
 
 	if (editing) {
 		editing = false;
@@ -576,7 +580,7 @@ listTitleEls.forEach((el) => {
 
 	el.addEventListener('click', (event) => {
 
-		console.log(`list click: ${event.target}`);
+		// console.log(`list click: ${event.target}`);
 
 		if (editing && editingTarget !== el) {
 			editingTarget.lastElementChild.style.zIndex = '-1';
@@ -602,7 +606,13 @@ listTitleEls.forEach((el) => {
 
 document.body.addEventListener('keypress', (event) => {});
 
-function displayModel(content) {
+function displayModel(content, text) {
+	const span = itemDisplayInformationContainer.querySelector('span');
+	span.textContent = text;
+	const textArea = itemDisplayInformationContainer.querySelector('textarea');
+	textArea.value = text;
+	textArea.style.height = '0px';
+
 	modalEl.appendChild(content);
 	document.body.appendChild(modalEl);
 }
@@ -610,6 +620,11 @@ function displayModel(content) {
 modalEl.addEventListener('click', (event) => {
 	if (event.target !== modalEl)
 		return;
+	if (editingItemTarget !== null) {
+		editingItemTarget.textContent = itemDisplayInformationContainer.querySelector('span').textContent;
+		itemDisplayInformationContainer.querySelector('textarea').parentNode.style.zIndex = -1;
+		editingItemTarget = null;
+	}
 	document.body.removeChild(modalEl);
 });
 
@@ -722,8 +737,28 @@ document.querySelectorAll('.list-items')[4].appendChild(newItem('makemedium'.rep
 
 const itemDisplayInformationContainer = createElements(
 	['div|item-display-container',
-		['div|item-header', ['div|item-header-display', ['span']],
-			['div|item-header-edit', ['textarea']]
+		['div|item-header', ['div|item-header-display', ['span||placeholder']],
+			['div|item-header-edit', ['textarea|editable']]
 		]
 	]
 );
+
+{
+ 	const parent = itemDisplayInformationContainer.querySelector('.item-header');
+	const displayArea = parent.children[0];
+	const editArea = parent.children[1];
+	editArea.children[0].style.height = `${displayArea.children[0].getBoundingClientRect().height}px`;
+	editArea.children[0].addEventListener('input', (event) => {
+		displayArea.children[0].textContent = editArea.children[0].value;
+		editArea.children[0].style.height = `${displayArea.children[0].getBoundingClientRect().height}px`;
+	});
+}
+
+itemDisplayInformationContainer.querySelector('span').addEventListener('click', (event) => {
+	const parent = event.target.closest('.item-header');
+	const displayArea = parent.children[0];
+	const editArea = parent.children[1];
+	editArea.children[0].value = displayArea.textContent;
+	editArea.children[0].style.height = `${displayArea.children[0].getBoundingClientRect().height}px`;
+	editArea.style.zIndex = 1;
+});
