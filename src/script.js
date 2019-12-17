@@ -1,27 +1,3 @@
-function getCounter(initial) {
-	let count = initial;
-	return function() {
-		return count++;
-	}
-}
-const getItemId = getCounter(1);
-const getListId = getCounter(1);
-
-const container = document.querySelector('.container');
-
-const placeholderContainerEl = createElements(
-	['div|placeholder-el item-container', ['div']]
-);
-
-const modalEl = createElements(['div|modal']);
-
-const listsEl = document.querySelector('.lists');
-const itemEls = document.querySelectorAll('.item');
-const listEls = document.querySelectorAll('.list-items');
-const listsEls = document.querySelectorAll('.list');
-const addBtns = document.querySelectorAll('.list-new button');
-const newListBtn = document.querySelector('.new');
-
 let potentialDrag = false;
 let dragging = false;
 let dragStartData = null;
@@ -35,8 +11,6 @@ let editingItemTarget = null;
 
 function mousedownHandler(event) {
 	let target = event.target;
-
-	// console.log(`mousedown: ${target}`);
 
 	if (target === document.body)
 		return;
@@ -337,8 +311,6 @@ function mousemoveHandler(event) {
 function mouseupHandler(event) {
 	event.preventDefault();
 
-	// console.log(`mouseup: ${event.target}`);
-
 	if (addingNewItem && dragging) {
 		const target = dragStartData.targetEl;
 		placeholderContainerEl.parentNode.replaceChild(target, placeholderContainerEl);
@@ -402,15 +374,24 @@ function mouseupHandler(event) {
 	if (dragStartData.dragType === 'item') {
 		placeholderContainerEl.firstElementChild.style.removeProperty('height');
 	}
+
+	if (dragStartData.dragType === 'item') {
+
+	} else {
+		const startingIndex = target.dataset['index'];
+		let insertAtIndex = 0;
+		const previousElement = target.previousElementSibling;
+		if (previousElement) {
+			insertAtIndex = previousElement.dataset['index'];
+		}
+		insertListAt(startingIndex, insertAtIndex);
+	}
 	dragStartData = null;
 	dragging = false;
 	potentialDrag = false;
 }
 
 function mouseclickHandler(event) {
-
-	// console.log(`mouseclick: ${event.target}`);
-
 	if (editing) {
 		editing = false;
 
@@ -479,11 +460,11 @@ function createElements(structure, info={}) {
 	}
 }
 
-function newList() {
+function newList(title) {
 	return createElements(
 		['div|list-container',
-			['div|list|settitle:getListId',
-				['div|list-header', ['div|header-title', ['span||:title']],
+			['div|list',
+				['div|list-header', ['div|header-title', [`span||${title}`]],
 					['div|header-edit', ['textarea']]
 				],
 				['div|list-items'],
@@ -514,9 +495,23 @@ document.body.addEventListener('mousemove', mousemoveHandler);
 document.body.addEventListener('mouseup', mouseupHandler);
 document.body.addEventListener('click', mouseclickHandler);
 
-for (let i = 0; i < 10; i++) {
-	addListHandler(null, i % 2 === 0 ? 50 : 10);
-}
+const container = document.querySelector('.container');
+const placeholderContainerEl = createElements(
+	['div|placeholder-el item-container', ['div']]
+);
+
+const listsEl = document.querySelector('.lists');
+
+init();
+
+const modalEl = createElements(['div|modal']);
+const itemEls = document.querySelectorAll('.item');
+const listEls = document.querySelectorAll('.list-items');
+const listsEls = document.querySelectorAll('.list');
+const addBtns = document.querySelectorAll('.list-new button');
+const newListBtn = document.querySelector('.new');
+
+
 
 const headerEl = document.querySelector('.header');
 {
@@ -579,8 +574,6 @@ listTitleEls.forEach((el) => {
 	editorDivTextarea.style.height = `${titleSpan.getBoundingClientRect().height}px`;
 
 	el.addEventListener('click', (event) => {
-
-		// console.log(`list click: ${event.target}`);
 
 		if (editing && editingTarget !== el) {
 			editingTarget.lastElementChild.style.zIndex = '-1';
@@ -729,11 +722,11 @@ textarea.addEventListener('input', (event) => {
 
 // container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh
 
-document.querySelectorAll('.list-items')[3].appendChild(newItem('makelarge'.repeat(20)));
-document.querySelectorAll('.list-items')[2].appendChild(newItem('makelarge'.repeat(20)));
-document.querySelectorAll('.list-items')[1].appendChild(newItem('makemedium'.repeat(6)));
-document.querySelectorAll('.list-items')[3].appendChild(newItem('makemedium'.repeat(6)));
-document.querySelectorAll('.list-items')[4].appendChild(newItem('makemedium'.repeat(6)));
+// document.querySelectorAll('.list-items')[3].appendChild(newItem('makelarge'.repeat(20)));
+// document.querySelectorAll('.list-items')[2].appendChild(newItem('makelarge'.repeat(20)));
+// document.querySelectorAll('.list-items')[1].appendChild(newItem('makemedium'.repeat(6)));
+// document.querySelectorAll('.list-items')[3].appendChild(newItem('makemedium'.repeat(6)));
+// document.querySelectorAll('.list-items')[4].appendChild(newItem('makemedium'.repeat(6)));
 
 const itemDisplayInformationContainer = createElements(
 	['div|item-display-container',
@@ -762,3 +755,16 @@ itemDisplayInformationContainer.querySelector('span').addEventListener('click', 
 	editArea.children[0].style.height = `${displayArea.children[0].getBoundingClientRect().height}px`;
 	editArea.style.zIndex = 1;
 });
+
+function init() {
+	const getIndex = getCounter(0);
+	data.lists.forEach((list) => {
+		const nList = newList(list.name);
+		nList.dataset['index'] = getIndex();
+		const listItemsEl = nList.querySelector('.list-items');
+		list.items.forEach((item) => {
+			listItemsEl.appendChild(newItem(item));
+		});
+		listsEl.insertBefore(nList, listsEl.lastElementChild);
+	});
+}
