@@ -21,14 +21,32 @@ function makeLarge(listIndex, ItemIndex) {
 }
 
 function insertListAt(listIndex, positionIndex) {
-	const list = data.lists.splice(listIndex, 1);
-	data.lists.splice(positionIndex, 0, list[0]);
+	const list = data.lists.splice(listIndex, 1)[0];
+	data.lists.splice(positionIndex, 0, list);
 	displayListNames();
 }
 
 function displayListNames() {
 	const names = data.lists.map((list) => list.name);
 	console.log(JSON.stringify(names));
+}
+
+function insertItemAt(listIndex, itemIndex, positionIndex) {
+	const item = data.lists[listIndex].items.splice(itemIndex, 1)[0];
+	data.lists[listIndex].items.splice(positionIndex, 0, item);
+	displayItems(listIndex);
+}
+
+function insertItemAt2(listIndex1, listIndex2, itemIndex, positionIndex) {
+	const item = data.lists[listIndex1].items.splice(itemIndex, 1)[0];
+	data.lists[listIndex2].items.splice(positionIndex, 0, item);
+	displayItems(listIndex1);
+	displayItems(listIndex2);
+}
+
+function displayItems(listIndex) {
+	const items = data.lists[listIndex].items.map((item) => item);
+	console.log(JSON.stringify(items));
 }
 
 const data = {
@@ -41,13 +59,13 @@ for (let i = 0; i < 10; i++) {
 		name: `List ${getListId()}`,
 		items: []
 	};
-	const limit = (i % 2 === 0) ? 10 : 25;
+	const limit = (i % 2 === 0) ? 10 : 10;
 	for (let j = 0; j < limit; j++) {
 		list.items.push(`Item ${getItemId()}`);
 	}
 	data.lists.push(list);
 }
 
-makeMedium(0, 0);
-makeMedium(1, 3);
-makeLarge(1, 4);
+// makeMedium(0, 0);
+// makeMedium(1, 3);
+// makeLarge(1, 4);

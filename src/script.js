@@ -19,6 +19,7 @@ function mousedownHandler(event) {
 		potentialDrag = true;
 		target = target.parentNode;
 		dragStartData = {
+			startingListIndex: Number(target.closest('.list-container').dataset['index']),
 			targetEl: target,
 			targetStartX: target.getBoundingClientRect().x,
 			targetStartY: target.getBoundingClientRect().y,
@@ -321,6 +322,48 @@ function mouseupHandler(event) {
 		placeholderContainerEl.style.removeProperty('height');
 		if (dragStartData.dragType === 'item') {
 			placeholderContainerEl.firstElementChild.style.removeProperty('height');
+
+			// copied and pasted...
+			const startingItemIndex = Number(target.dataset['index']);
+			const currentList = Number(target.closest('.list-container').dataset['index']);
+
+			if (currentList === dragStartData.startingListIndex) {
+				let insertItemAtIndex = -1;
+				const previousElement = target.previousElementSibling;
+				if (previousElement) {
+					insertItemAtIndex = Number(previousElement.dataset['index']);
+				}
+
+				if (startingItemIndex === insertItemAtIndex + 1) {
+					// leave as is
+				} else if (startingItemIndex < insertItemAtIndex) {
+					insertItemAt(currentList, startingItemIndex, insertItemAtIndex);
+				} else {
+					insertItemAt(currentList, startingItemIndex, insertItemAtIndex + 1);
+				}
+
+				const index = getCounter(0);
+				[...listsEl.children[currentList].querySelectorAll('.item-container')].forEach((el) => {
+					el.dataset['index'] = index()
+				});
+			} else {
+				let insertItemAtIndex = -1;
+				const previousElement = target.previousElementSibling;
+				if (previousElement) {
+					insertItemAtIndex = Number(previousElement.dataset['index']);
+				}
+				insertItemAt2(dragStartData.startingListIndex, currentList, startingItemIndex, insertItemAtIndex + 1);
+
+				const index = getCounter(0);
+				[...listsEl.children[currentList].querySelectorAll('.item-container')].forEach((el) => {
+					el.dataset['index'] = index()
+				});
+				const index2 = getCounter(0);
+				[...listsEl.children[dragStartData.startingListIndex].querySelectorAll('.item-container')].forEach((el) => {
+					el.dataset['index'] = index2()
+				});
+			}
+
 		}
 		dragStartData = null;
 		dragging = false;
@@ -376,15 +419,62 @@ function mouseupHandler(event) {
 	}
 
 	if (dragStartData.dragType === 'item') {
+		const startingItemIndex = Number(target.dataset['index']);
+		const currentList = Number(target.closest('.list-container').dataset['index']);
+
+		if (currentList === dragStartData.startingListIndex) {
+			let insertItemAtIndex = -1;
+			const previousElement = target.previousElementSibling;
+			if (previousElement) {
+				insertItemAtIndex = Number(previousElement.dataset['index']);
+			}
+
+			if (startingItemIndex === insertItemAtIndex + 1) {
+				// leave as is
+			} else if (startingItemIndex < insertItemAtIndex) {
+				insertItemAt(currentList, startingItemIndex, insertItemAtIndex);
+			} else {
+				insertItemAt(currentList, startingItemIndex, insertItemAtIndex + 1);
+			}
+
+			const index = getCounter(0);
+			[...listsEl.children[currentList].querySelectorAll('.item-container')].forEach((el) => {
+				el.dataset['index'] = index()
+			});
+		} else {
+			let insertItemAtIndex = -1;
+			const previousElement = target.previousElementSibling;
+			if (previousElement) {
+				insertItemAtIndex = Number(previousElement.dataset['index']);
+			}
+			insertItemAt2(dragStartData.startingListIndex, currentList, startingItemIndex, insertItemAtIndex + 1);
+
+			const index = getCounter(0);
+			[...listsEl.children[currentList].querySelectorAll('.item-container')].forEach((el) => {
+				el.dataset['index'] = index()
+			});
+			const index2 = getCounter(0);
+			[...listsEl.children[dragStartData.startingListIndex].querySelectorAll('.item-container')].forEach((el) => {
+				el.dataset['index'] = index2()
+			});
+		}
 
 	} else {
-		const startingIndex = target.dataset['index'];
+		const startingIndex = Number(target.dataset['index']);
 		let insertAtIndex = 0;
 		const previousElement = target.previousElementSibling;
 		if (previousElement) {
-			insertAtIndex = previousElement.dataset['index'];
+			insertAtIndex = Number(previousElement.dataset['index']);
 		}
-		insertListAt(startingIndex, insertAtIndex);
+
+		if (startingIndex <= insertAtIndex) {
+			insertListAt(startingIndex, insertAtIndex);
+		} else {
+			insertListAt(startingIndex, insertAtIndex + 1);
+		}
+
+		const index = getCounter(0);
+		[...document.querySelectorAll('.list-container')].forEach((el) => el.dataset['index'] = index());
 	}
 	dragStartData = null;
 	dragging = false;
@@ -429,8 +519,13 @@ function mouseclickHandler(event) {
 	}
 
 	if (target.classList.contains('new')) {
+		data.lists.push({
+			name: 'empty',
+			items: []
+		});
 		const nList = newList();
 		listsEl.insertBefore(nList, listsEl.lastElementChild);
+		nList.dataset['index'] = Number(nList.previousElementSibling.dataset['index']) + 1;
 	}
 }
 
@@ -683,8 +778,10 @@ objB.addEventListener('click', (event) => {
 		return;
 
 	const list = event.target.closest('.list');
-
-	list.children[1].insertBefore(newItem(helper.textContent), insertNewItemInputContainer);
+	const o = newItem(helper.textContent);
+	list.children[1].insertBefore(o, insertNewItemInputContainer);
+	data.lists[Number(list.closest('.list-container').dataset['index'])].items.push(helper.textContent);
+	o.dataset['index'] = (o.previousElementSibling === null) ? 0 : Number(o.previousElementSibling.dataset['index']) + 1;
 	textarea.value = '';
 	helper.textContent = '';
 	textarea.style.height = '';
@@ -719,14 +816,7 @@ textarea.addEventListener('input', (event) => {
 	textarea.style.height = `${helper.getBoundingClientRect().height}px`;
 });
 
-
 // container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh
-
-// document.querySelectorAll('.list-items')[3].appendChild(newItem('makelarge'.repeat(20)));
-// document.querySelectorAll('.list-items')[2].appendChild(newItem('makelarge'.repeat(20)));
-// document.querySelectorAll('.list-items')[1].appendChild(newItem('makemedium'.repeat(6)));
-// document.querySelectorAll('.list-items')[3].appendChild(newItem('makemedium'.repeat(6)));
-// document.querySelectorAll('.list-items')[4].appendChild(newItem('makemedium'.repeat(6)));
 
 const itemDisplayInformationContainer = createElements(
 	['div|item-display-container',
@@ -757,13 +847,16 @@ itemDisplayInformationContainer.querySelector('span').addEventListener('click', 
 });
 
 function init() {
-	const getIndex = getCounter(0);
+	const getListIndex = getCounter(0);
 	data.lists.forEach((list) => {
 		const nList = newList(list.name);
-		nList.dataset['index'] = getIndex();
+		nList.dataset['index'] = getListIndex();
+		const getItemIndex = getCounter(0);
 		const listItemsEl = nList.querySelector('.list-items');
 		list.items.forEach((item) => {
-			listItemsEl.appendChild(newItem(item));
+			const o = newItem(item);
+			o.dataset['index'] = getItemIndex();
+			listItemsEl.appendChild(o);
 		});
 		listsEl.insertBefore(nList, listsEl.lastElementChild);
 	});
