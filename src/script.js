@@ -1,3 +1,14 @@
+const mousedownQueue = [];
+
+document.body.addEventListener('mousedown', (event) => {
+	for (let i = 0; i < mousedownQueue.length; i++) {
+		if (mousedownQueue[i](event)) {
+			mousedownQueue.splice(i, 1);
+			i--;
+		}
+	}
+});
+
 let potentialDrag = false;
 let dragging = false;
 let dragStartData = null;
@@ -482,18 +493,11 @@ function mouseupHandler(event) {
 }
 
 function mouseclickHandler(event) {
-	if (editing) {
-		editing = false;
-
-		if (editingTarget === headerEl) {
-			editingTarget.lastElementChild.style.zIndex = '-1';
-		} else {
-			editingTarget.lastElementChild.style.zIndex = '-1';
-		}
-		return;
+	const target = event.target;
+	if (target.classList.contains('editable')) {
+		makeTargetEditable(event.target);
 	}
 
-	const target = event.target;
 	if (target.tagName !== 'BUTTON')
 		return;
 
@@ -559,7 +563,7 @@ function newList(title) {
 	return createElements(
 		['div|list-container',
 			['div|list',
-				['div|list-header', ['div|header-title', [`span||${title}`]],
+				['div|list-header editable-container grow-height', ['div|header-title', [`span|editable|${title}`]],
 					['div|header-edit', ['textarea']]
 				],
 				['div|list-items'],
@@ -586,7 +590,7 @@ function addListHandler(event, n) {
 }
 
 document.body.addEventListener('mousedown', mousedownHandler);
-document.body.addEventListener('mousemove', mousemoveHandler);
+// document.body.addEventListener('mousemove', mousemoveHandler);
 document.body.addEventListener('mouseup', mouseupHandler);
 document.body.addEventListener('click', mouseclickHandler);
 
@@ -606,52 +610,6 @@ const listsEls = document.querySelectorAll('.list');
 const addBtns = document.querySelectorAll('.list-new button');
 const newListBtn = document.querySelector('.new');
 
-
-
-const headerEl = document.querySelector('.header');
-{
-	const el = headerEl;
-	const titleDiv = el.children[0];
-	const titleSpan = titleDiv.firstElementChild;
-
-	const editorDiv = el.children[1];
-	const editorDivTextarea = editorDiv.firstElementChild;
-
-	editorDivTextarea.style.width = `${titleSpan.getBoundingClientRect().width}px`;
-}
-
-headerEl.addEventListener('click', (event) => {
-	if (editing && editingTarget !== headerEl) {
-		editingTarget.lastElementChild.style.zIndex = '-1';
-	}
-
-	const el = headerEl;
-	const titleDiv = el.children[0];
-	const titleSpan = titleDiv.firstElementChild;
-
-	const editorDiv = el.children[1];
-	const editorDivTextarea = editorDiv.firstElementChild;
-
-	editorDivTextarea.style.width = `${titleSpan.getBoundingClientRect().width}px`;
-
-	event.stopPropagation();
-	editing = true;
-	editingTarget = headerEl;
-
-	editorDivTextarea.value = titleSpan.textContent;
-	editorDiv.style.zIndex = '1';
-	editorDivTextarea.focus();
-	editorDivTextarea.setSelectionRange(-1, -1);
-
-	editorDivTextarea.addEventListener('input', (event) => {
-		titleSpan.textContent = editorDivTextarea.value;
-		if (editorDivTextarea.value === '') {
-			return;
-		}
-		editorDivTextarea.style.width = `${titleSpan.getBoundingClientRect().width}px`;
-	});
-});
-
 const editingHelperContainer = document.createElement('div');
 editingHelperContainer.className = 'editing-helper-container';
 
@@ -659,38 +617,48 @@ const editingHelper = document.createElement('div');
 editingHelper.className = 'editing-helper';
 editingHelperContainer.appendChild(editingHelper);
 
-const listTitleEls = document.querySelectorAll('.list-header');
-listTitleEls.forEach((el) => {
-	const titleDiv = el.children[0];
-	const titleSpan = titleDiv.firstElementChild;
-	const editorDiv = el.children[1];
-	const editorDivTextarea = editorDiv.firstElementChild;
 
-	editorDivTextarea.style.height = `${titleSpan.getBoundingClientRect().height}px`;
+function makeTargetEditable(el) {
+	const containerEl = el.closest('.editable-container');
+	const displayEl = containerEl.firstElementChild.firstElementChild;
+	const inputContainerEl = containerEl.lastElementChild;
+	const inputEl = inputContainerEl.firstElementChild;
 
-	el.addEventListener('click', (event) => {
+	if (inputEl.tagName === 'TEXTAREA') {
+		inputEl.textContent = displayEl.textContent;
+	} else {
+		inputEl.value = displayEl.textContent;
+	}
 
-		if (editing && editingTarget !== el) {
-			editingTarget.lastElementChild.style.zIndex = '-1';
-		}
+ 	// replace this with dataset attribute?
+	let growProperty = 'width';
+	if (containerEl.classList.contains('grow-height')) {
+		growProperty = 'height';
+	}
 
-		event.stopPropagation();
-		editing = true;
-		editingTarget = el;
+	inputEl.style[growProperty] = `${displayEl.getBoundingClientRect()[growProperty]}px`;
+	inputContainerEl.style.zIndex = 1;
 
-		editorDivTextarea.value = titleSpan.textContent;
-		editorDiv.style.zIndex = '1';
-		editorDivTextarea.focus();
+	const editableInputHandler = (event) => {
+		displayEl.textContent = inputEl.value;
+		inputEl.style[growProperty] = `${displayEl.getBoundingClientRect()[growProperty]}px`;
+	}
 
-		editorDivTextarea.addEventListener('input', (event) => {
-			titleSpan.textContent = editorDivTextarea.value;
-			if (editorDivTextarea.value === '') {
-				return;
-			}
-			editorDivTextarea.style.height = `${titleSpan.getBoundingClientRect().height}px`;
-		});
+	inputEl.addEventListener('input', editableInputHandler);
+	inputEl.focus();
+	inputEl.setSelectionRange(-1, -1);
+
+	mousedownQueue.push((event) => {
+		const target = event.target;
+		if (target === inputEl)
+			return false;
+
+		// todo: update data object
+		inputEl.removeEventListener('input', editableInputHandler);
+		inputContainerEl.style.zIndex = -1;
+		return true;
 	});
-});
+}
 
 document.body.addEventListener('keypress', (event) => {});
 
@@ -821,7 +789,7 @@ textarea.addEventListener('input', (event) => {
 const itemDisplayInformationContainer = createElements(
 	['div|item-display-container',
 		['div|item-header', ['div|item-header-display', ['span||placeholder']],
-			['div|item-header-edit', ['textarea|editable']]
+			['div|item-header-edit', ['textarea']]
 		]
 	]
 );

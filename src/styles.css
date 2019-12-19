@@ -67,13 +67,13 @@ body {
 	border-radius: 5px;
 	border: none;
 	padding: 5px;
+	width: 0px;
 }
 
 .header .header-label-edit input:focus {
 	border: 2px solid #ade4ea;
 	padding: 3px;
 }
-
 
 .header-edit input {
 	padding: 3px 8px;
@@ -343,7 +343,7 @@ input {
 .list-header .header-title span {
 	font-size: 14px;
 	font-weight: bold;
-	min-height: 19px;
+	min-height: 29px;
 	padding: 5px;
 	border-radius: 5px;
 }
@@ -363,7 +363,7 @@ input {
 .list-header .header-edit textarea {
 	font-family: 'Segoe UI';
 	width: 100%;
-	height: 19px;
+	height: 0px;
 	padding: 5px;
 }
 
@@ -411,7 +411,7 @@ input {
 	padding: 5px;
 }
 
-.item-display-container .item-header-edit .editable {
+.item-display-container .item-header-edit textarea {
 	width: 100%;
 	height: 100%;
 	border: 0;
