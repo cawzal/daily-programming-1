@@ -496,31 +496,15 @@ function mouseclickHandler(event) {
 	const target = event.target;
 	if (target.classList.contains('editable')) {
 		makeTargetEditable(event.target);
+		return;
+	}
+	if (target.classList.contains('add')) {
+		showAddNewItemContainer(event.target);
+		return;
 	}
 
 	if (target.tagName !== 'BUTTON')
 		return;
-
-	const inputEl = target.previousElementSibling;
-
-	if (target.classList.contains('add')) {
-		if (addingTarget !== null) {
-			addingTarget.children[2].style.display = 'block';
-		}
-		addingNewItem = true;
-		const nItem = newItem();
-		const parent = target.closest('.list');
-		addingTarget = parent;
-		const button = target.closest('.new-item-div');
-		button.style.display = 'none';
-		parent.children[1].appendChild(insertNewItemInputContainer);
-		// scroll if required
-		const itemsContainer = parent.children[1];
-		if (itemsContainer.clientHeight < itemsContainer.scrollHeight) {
-			itemsContainer.scrollTop = itemsContainer.scrollHeight - itemsContainer.clientHeight;
-		}
-		return;
-	}
 
 	if (target.classList.contains('new')) {
 		data.lists.push({
@@ -590,7 +574,7 @@ function addListHandler(event, n) {
 }
 
 document.body.addEventListener('mousedown', mousedownHandler);
-// document.body.addEventListener('mousemove', mousemoveHandler);
+document.body.addEventListener('mousemove', mousemoveHandler);
 document.body.addEventListener('mouseup', mouseupHandler);
 document.body.addEventListener('click', mouseclickHandler);
 
@@ -659,8 +643,6 @@ function makeTargetEditable(el) {
 		return true;
 	});
 }
-
-document.body.addEventListener('keypress', (event) => {});
 
 function displayModel(content, text) {
 	const span = itemDisplayInformationContainer.querySelector('span');
@@ -740,7 +722,7 @@ inputContainerButtonsDiv.className = 'new-buttons-area';
 
 const objB = document.createElement('button');
 objB.textContent = 'Add';
-objB.className = 'eh';
+objB.className = 'eh adding';
 objB.addEventListener('click', (event) => {
 	if (textarea.value === '')
 		return;
@@ -762,7 +744,7 @@ objB.addEventListener('click', (event) => {
 });
 
 const objC = document.createElement('button');
-objC.className = 'eh';
+objC.className = 'eh cancel';
 objC.textContent = 'Cancel';
 objC.addEventListener('click', (event) => {
 	addingNewItem = false;
@@ -774,6 +756,50 @@ objC.addEventListener('click', (event) => {
 	helper.textContent = '';
 	textarea.style.height = '';
 });
+
+function showAddNewItemContainer(el) {
+	const list = el.closest('.list');
+	const button = el.closest('.new-item-div');
+	button.style.display = 'none'
+	const itemsContainer = list.children[1];
+	itemsContainer.appendChild(insertNewItemInputContainer);
+
+	if (itemsContainer.clientHeight < itemsContainer.scrollHeight) {
+		itemsContainer.scrollTop = itemsContainer.scrollHeight - itemsContainer.clientHeight;
+	}
+
+	mousedownQueue.push((event) => {
+		const target = event.target;
+		if (target.tagName === 'TEXTAREA' || target.classList.contains('adding') || target.parentNode.parentNode.classList.contains('list-header')) {
+			return false;
+		}
+
+		if (target.classList.contains('add')) {
+			itemsContainer.removeChild(insertNewItemInputContainer);
+			button.style.display = 'block';
+			return true;
+		}
+
+		if (target.classList.contains('cancel')) {
+			return true;
+		}
+
+		if (textarea.value === '') {
+			itemsContainer.removeChild(insertNewItemInputContainer);
+			button.style.display = 'block';
+			return true;
+		}
+
+		const o = newItem(helper.textContent);
+		itemsContainer.insertBefore(o, insertNewItemInputContainer);
+		textarea.value = '';
+		helper.textContent = '';
+		itemsContainer.removeChild(insertNewItemInputContainer);
+		button.style.display = 'block';
+
+		return true;
+	});
+}
 
 inputContainerButtonsDiv.appendChild(objB);
 inputContainerButtonsDiv.appendChild(objC);
@@ -788,31 +814,11 @@ textarea.addEventListener('input', (event) => {
 
 const itemDisplayInformationContainer = createElements(
 	['div|item-display-container',
-		['div|item-header', ['div|item-header-display', ['span||placeholder']],
+		['div|item-header editable-container grow-height', ['div|item-header-display', ['span|editable|placeholder']],
 			['div|item-header-edit', ['textarea']]
 		]
 	]
 );
-
-{
- 	const parent = itemDisplayInformationContainer.querySelector('.item-header');
-	const displayArea = parent.children[0];
-	const editArea = parent.children[1];
-	editArea.children[0].style.height = `${displayArea.children[0].getBoundingClientRect().height}px`;
-	editArea.children[0].addEventListener('input', (event) => {
-		displayArea.children[0].textContent = editArea.children[0].value;
-		editArea.children[0].style.height = `${displayArea.children[0].getBoundingClientRect().height}px`;
-	});
-}
-
-itemDisplayInformationContainer.querySelector('span').addEventListener('click', (event) => {
-	const parent = event.target.closest('.item-header');
-	const displayArea = parent.children[0];
-	const editArea = parent.children[1];
-	editArea.children[0].value = displayArea.textContent;
-	editArea.children[0].style.height = `${displayArea.children[0].getBoundingClientRect().height}px`;
-	editArea.style.zIndex = 1;
-});
 
 function init() {
 	const getListIndex = getCounter(0);

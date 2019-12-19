@@ -66,6 +66,6 @@ for (let i = 0; i < 10; i++) {
 	data.lists.push(list);
 }
 
-// makeMedium(0, 0);
-// makeMedium(1, 3);
-// makeLarge(1, 4);
+makeMedium(0, 0);
+makeMedium(1, 3);
+makeLarge(1, 4);
