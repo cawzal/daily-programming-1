@@ -59,7 +59,7 @@ for (let i = 0; i < 10; i++) {
 		name: `List ${getListId()}`,
 		items: []
 	};
-	const limit = (i % 2 === 0) ? 10 : 10;
+	const limit = (i % 2 === 0) ? 10 : 25;
 	for (let j = 0; j < limit; j++) {
 		list.items.push(`Item ${getItemId()}`);
 	}

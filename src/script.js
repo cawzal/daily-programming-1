@@ -314,6 +314,9 @@ function mousemoveHandler(event) {
 		const currentItemX = parentList.getBoundingClientRect().x;
 
 		if (placeholderContainerElX < currentItemX) {
+			while (placeholderContainerEl.nextElementSibling !== parentList) {
+				parentList.parentNode.insertBefore(placeholderContainerEl.nextElementSibling, placeholderContainerEl);
+			}
 			parentList.parentNode.insertBefore(parentList, placeholderContainerEl); // moving left towards right
 		} else {
 			parentList.parentNode.insertBefore(placeholderContainerEl, parentList);
@@ -497,6 +500,7 @@ function mouseupHandler(event) {
 function mouseclickHandler(event) {
 	const target = event.target;
 	if (target.classList.contains('editable')) {
+		console.log('yo');
 		makeTargetEditable(event.target);
 		return;
 	}
@@ -804,7 +808,7 @@ textarea.addEventListener('input', (event) => {
 	textarea.style.height = `${helper.getBoundingClientRect().height}px`;
 });
 
-// container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh
+container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh
 
 const itemDisplayInformationContainer = createElements(
 	['div|item-display-container',

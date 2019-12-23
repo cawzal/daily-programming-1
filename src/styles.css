@@ -289,6 +289,62 @@ body {
 
 
 
+.add-new-list-container {
+	background-color: #6B4A40
+	width: 250px;
+	padding: 5px;
+	border-radius: 5px;
+	height: max-content;
+}
+
+.add-new-list {
+	width: 240px;
+	background-color: #986A5B;
+	padding: 5px;
+	border-radius: 5px;
+	position: relative;
+}
+
+.add-new-title {
+
+}
+
+.add-new-title div {
+	padding: 5px;
+	font-size: 14px;
+	font-weight: bold;
+	word-wrap: break-word;
+}
+
+.add-new-edit {
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 5px;
+	width: 100%;
+	z-index: -1;
+}
+
+.add-new-edit textarea {
+	resize: none;
+	border-radius: 5px;
+	padding: 5px;
+	height: 29px;
+	overflow: hidden;
+	font-family: 'Segoe UI';
+	font-size: 14px;
+	font-weight: bold;
+	width: 100%;
+}
+
+.add-new-edit textarea:focus {
+	outline: none;
+	border: 2px solid #DFCCC6;
+	padding: 3px;
+}
+
+
+
 .item-display-container {
 	width: 500px;
 	border: 2px solid #333;
