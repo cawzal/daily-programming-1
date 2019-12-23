@@ -41,7 +41,7 @@ function mousedownHandler(event) {
 		return;
 	}
 
-	if (target.parentNode.parentNode.classList.contains('list-header')) {
+	if (target.parentNode.parentNode.classList.contains('list-header-title-container')) {
 		potentialDrag = true;
 		target = target.parentNode.parentNode.parentNode.parentNode;
 		dragStartData = {
@@ -90,7 +90,9 @@ function mousemoveHandler(event) {
 		} else {
 			const padding = 10;
 			placeholderContainerEl.style.height = `${target.firstElementChild.getBoundingClientRect().height + padding}px`;
-			placeholderContainerEl.children[0].style.width = `${target.getBoundingClientRect().width - 10}px`; // list only
+			placeholderContainerEl.children[0].style.width = `${target.getBoundingClientRect().width - padding}px`; // list only
+
+			console.log(placeholderContainerEl.style.position);
 
 			const deltaX = event.clientX - dragStartData.mouseStartX;
 			const deltaY = event.clientY - dragStartData.mouseStartY;
@@ -547,8 +549,8 @@ function newList(title) {
 	return createElements(
 		['div|list-container',
 			['div|list',
-				['div|list-header editable-container grow-height', ['div|header-title', [`span|editable|${title}`]],
-					['div|header-edit', ['textarea']]
+				['div|list-header-title-container editable-container grow-height', ['div|list-header-title', [`span|editable|${title}`]],
+					['div|list-header-edit', ['textarea']]
 				],
 				['div|list-items'],
 				['div|new-item-div', ['button|add|Add Item']]
@@ -578,7 +580,7 @@ document.body.addEventListener('mousemove', mousemoveHandler);
 document.body.addEventListener('mouseup', mouseupHandler);
 document.body.addEventListener('click', mouseclickHandler);
 
-const container = document.querySelector('.container');
+const container = document.querySelector('.lists-container');
 const placeholderContainerEl = createElements(
 	['div|placeholder-el item-container', ['div']]
 );
@@ -593,14 +595,6 @@ const listEls = document.querySelectorAll('.list-items');
 const listsEls = document.querySelectorAll('.list');
 const addBtns = document.querySelectorAll('.list-new button');
 const newListBtn = document.querySelector('.new');
-
-const editingHelperContainer = document.createElement('div');
-editingHelperContainer.className = 'editing-helper-container';
-
-const editingHelper = document.createElement('div');
-editingHelper.className = 'editing-helper';
-editingHelperContainer.appendChild(editingHelper);
-
 
 function makeTargetEditable(el) {
 	const containerEl = el.closest('.editable-container');
