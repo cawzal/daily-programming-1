@@ -63,6 +63,8 @@ body {
 	padding: 5px;
 	background: #6B4A40;
 	border-radius: 5px;
+	min-height: 34px;
+	min-width: 34px;
 }
 
 .header-title div:hover {

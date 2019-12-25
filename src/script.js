@@ -180,9 +180,6 @@ function mousemoveHandler(event) {
 				}
 			}
 
-			// if (scrolling)
-			// 	return;
-
 			if (currentItem === null)
 				return;
 
@@ -278,31 +275,7 @@ function mousemoveHandler(event) {
 			}
 		});
 
-		// try to put scrolling in here...
-		const scrollX = container.scrollLeft;
-		const widthX = container.scrollWidth;
-		const mouseX = event.clientX;
-		const pageWidth = container.clientWidth;
-
-		if ((0 < mouseX) && (mouseX < 100)) {
-			if (scrollX !== 0) {
-				scrollZone = 'left';
-				if (!scrolling) {
-					scrolling = true;
-					startScrollLeft();
-				}
-			}
-		} else if (((pageWidth - 100) < mouseX) && (mouseX < pageWidth)) {
-			if ((scrollX + pageWidth) !== widthX) {
-				scrollZone = 'right';
-				if (!scrolling) {
-					scrolling = true;
-					startScrollRight();
-				}
-			}
-		} else {
-			scrollZone = '';
-		}
+		// window.dispatchEvent(new CustomEvent('scrolla'));
 
 		if (parentList === null)
 			return;
@@ -324,6 +297,11 @@ function mousemoveHandler(event) {
 		return;
 	}
 }
+
+// window.addEventListener('scrolla', (event) => {
+// 	console.log(dragging);
+	
+// });
 
 function mouseupHandler(event) {
 	event.preventDefault();
@@ -384,6 +362,7 @@ function mouseupHandler(event) {
 		dragStartData = null;
 		dragging = false;
 		potentialDrag = false;
+		checkDragStart = true;
 		return;
 	}
 
@@ -654,7 +633,7 @@ modalEl.addEventListener('click', (event) => {
 function startScrollUp(elm) {
 	elm.scrollTop -= 20;
 	if (scrollZone === 'up' && elm.scrollTop !== 0) {
-		setTimeout(() => startScrollUp(elm), 50);
+		setTimeout(() => startScrollUp(elm), 45);
 	} else {
 		scrolling = false;
 	}
@@ -663,7 +642,7 @@ function startScrollUp(elm) {
 function startScrollDown(elm) {
 	elm.scrollTop += 20;
 	if (scrollZone === 'down' && (elm.scrollTop + elm.clientHeight) !== elm.scrollHeight) {
-		setTimeout(() => startScrollDown(elm), 50);
+		setTimeout(() => startScrollDown(elm), 45);
 	} else {
 		scrolling = false;
 	}
@@ -672,7 +651,7 @@ function startScrollDown(elm) {
 function startScrollLeft() {
 	container.scrollLeft = container.scrollLeft - 5;
 	if (scrollZone === 'left' && container.scrollLeft !== 0) {
-		setTimeout(startScrollLeft, 25);
+		setTimeout(startScrollLeft, 10);
 	} else {
 		scrolling = false;
 	}
@@ -681,7 +660,7 @@ function startScrollLeft() {
 function startScrollRight() {
 	container.scrollLeft = container.scrollLeft + 5;
 	if (scrollZone === 'right' && (container.scrollLeft + container.clientWidth) !== container.scrollWidth) {
-		setTimeout(startScrollRight, 25);
+		setTimeout(startScrollRight, 10);
 	} else {
 		scrolling = false;
 	}
@@ -890,4 +869,66 @@ function scrollMax() {
 	container.scrollLeft = container.scrollWidth - container.clientWidth;
 }
 
-scrollMax();
+// scrollMax();
+
+let startedTimer = false;
+let checkDragStart = true;
+document.body.addEventListener('mousemove', (event) => {
+	if (!dragging)
+		return;
+
+	const scrollX = container.scrollLeft;
+	const widthX = container.scrollWidth;
+	const mouseX = event.clientX;
+	const pageWidth = container.clientWidth;
+
+	if (checkDragStart) {
+		if ((0 < mouseX) && (mouseX < 100)) {
+			if ((0 < dragStartData.mouseStartX) && (dragStartData.mouseStartX < 100)) {
+				const abs = Math.abs(mouseX - dragStartData.mouseStartX);
+				if ((abs >= 15) && mouseX < dragStartData.mouseStartX) {
+					checkDragStart = false;
+				}
+			}
+		} else if (((pageWidth - 100) < mouseX) && (mouseX < pageWidth)) {
+			if (((pageWidth - 100) < dragStartData.mouseStartX) && (dragStartData.mouseStartX < pageWidth)) {
+				const abs = Math.abs(mouseX - dragStartData.mouseStartX);
+				if ((abs >= 15) && mouseX > dragStartData.mouseStartX) {
+					checkDragStart = false;
+				}
+			}
+		} else {
+			checkDragStart = false;
+		}
+	}
+
+	if (checkDragStart)
+		return;
+
+	if ((0 < mouseX) && (mouseX < 100)) {
+		if (scrollX !== 0) {
+			scrollZone = 'left';
+			if (!scrolling) {
+				scrolling = true;
+				if (startedTimer === false) {
+					startScrollLeft();
+					startedTimer = true;
+				}
+			}
+		}
+	} else if (((pageWidth - 100) < mouseX) && (mouseX < pageWidth)) {
+		if ((scrollX + pageWidth) !== widthX) {
+			scrollZone = 'right';
+			if (!scrolling) {
+				scrolling = true;
+				if (startedTimer === false) {
+					startScrollRight();
+					startedTimer = true;
+				}
+			}
+		}
+	} else {
+		scrollZone = '';
+		startedTimer = false;
+	}
+});
