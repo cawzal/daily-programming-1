@@ -500,26 +500,12 @@ function mouseupHandler(event) {
 function mouseclickHandler(event) {
 	const target = event.target;
 	if (target.classList.contains('editable')) {
-		console.log('yo');
 		makeTargetEditable(event.target);
 		return;
 	}
 	if (target.classList.contains('add')) {
 		showAddNewItemContainer(event.target);
 		return;
-	}
-
-	if (target.tagName !== 'BUTTON')
-		return;
-
-	if (target.classList.contains('new')) {
-		data.lists.push({
-			name: 'empty',
-			items: []
-		});
-		const nList = newList();
-		listsEl.insertBefore(nList, listsEl.lastElementChild);
-		nList.dataset['index'] = Number(nList.previousElementSibling.dataset['index']) + 1;
 	}
 }
 
@@ -605,6 +591,7 @@ function makeTargetEditable(el) {
 	const displayEl = containerEl.firstElementChild.firstElementChild;
 	const inputContainerEl = containerEl.lastElementChild;
 	const inputEl = inputContainerEl.firstElementChild;
+	const temp = containerEl.firstElementChild;
 
 	if (inputEl.tagName === 'TEXTAREA') {
 		inputEl.textContent = displayEl.textContent;
@@ -799,6 +786,73 @@ function showAddNewItemContainer(el) {
 	});
 }
 
+function showAddNewListContainer(el) {
+	const container = el.closest('.add-new-list-container');
+	el.style.display = 'none';
+	container.children[1].style.display = 'block';
+	const inputArea = container.children[1].children[1].firstElementChild;
+	const dispArea = container.children[1].children[0].firstElementChild
+	const cancelBt = container.children[1].lastElementChild;
+	const addBt = cancelBt.previousElementSibling;
+	inputArea.focus();
+	inputArea.setSelectionRange(-1, -1);
+
+	if (!tInit) {
+		tInit = true;
+		cancelBt.addEventListener('click', (event) => {
+			inputArea.value = '';
+			el.style.display = 'block';
+			container.children[1].style.display = 'none';
+		});
+	  	addBt.addEventListener('click', (event) => {
+	  		if (inputArea.value === '') {
+	  			inputArea.focus();
+	  			return;
+	  		}
+
+			data.lists.push({
+				name: inputArea.value,
+				items: []
+			});
+			const nList = newList(inputArea.value);
+			listsEl.insertBefore(nList, listsEl.lastElementChild);
+			nList.dataset['index'] = Number(nList.previousElementSibling.dataset['index']) + 1;
+			scrollMax();
+			inputArea.value = '';
+			inputArea.focus()
+		});
+		inputArea.addEventListener('input', (event) => {
+			dispArea.textContent = inputArea.value;
+			inputArea.style.height = `${Math.max(29, dispArea.getBoundingClientRect().height)}px`;
+		});
+	}
+
+	mousedownQueue.push((event) => {
+		const target = event.target;
+		if (target === inputArea)
+			return false
+
+		if (target === cancelBt || target === addBt) {
+			if (target === addBt) {
+				return false;
+			}
+			if (target === cancelBt) {
+				return true;
+			}
+		}
+
+		el.style.display = 'block';
+		container.children[1].style.display = 'none';
+		return true;
+	});
+}
+
+let tInit = false;
+const t = document.querySelector('.add-new-list-button');
+t.addEventListener('click', (event) => {
+	showAddNewListContainer(event.target);
+});
+
 inputContainerButtonsDiv.appendChild(objB);
 inputContainerButtonsDiv.appendChild(objC);
 insertNewItemInputContainer.appendChild(inputContainerButtonsDiv);
@@ -807,8 +861,6 @@ textarea.addEventListener('input', (event) => {
 	helper.textContent = textarea.value;
 	textarea.style.height = `${helper.getBoundingClientRect().height}px`;
 });
-
-container.scrollLeft = container.scrollWidth - container.clientWidth; // scrolled right on refresh
 
 const itemDisplayInformationContainer = createElements(
 	['div|item-display-container',
@@ -833,3 +885,9 @@ function init() {
 		listsEl.insertBefore(nList, listsEl.lastElementChild);
 	});
 }
+
+function scrollMax() {
+	container.scrollLeft = container.scrollWidth - container.clientWidth;
+}
+
+scrollMax();

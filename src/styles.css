@@ -125,11 +125,10 @@ body {
 
 .list-header-title-container {
 	position: relative;
-	padding: 5px;
 }
 
 .list-header-title {
-
+	padding: 5px;
 }
 
 .list-header-title span {
@@ -141,6 +140,7 @@ body {
 	display: inline-block;
 	width: 100%;
 	overflow-wrap: break-word;
+	overflow: hidden; /* prevents parent height from expanding when textarea is empty, why? */
 }
 
 /*.list-header-title span:hover {
@@ -297,7 +297,21 @@ body {
 	height: max-content;
 }
 
+.add-new-list-button {
+	border: 0;
+	outline: none;
+	border-radius: 5px;
+	width: 240px;
+	padding: 5px;
+	background-color: #986A5B;
+}
+
+.add-new-list-button:hover {
+	background-color: #CBBAB4;
+}
+
 .add-new-list {
+	display: none;
 	width: 240px;
 	background-color: #986A5B;
 	padding: 5px;
@@ -306,23 +320,24 @@ body {
 }
 
 .add-new-title {
-
-}
-
-.add-new-title div {
-	padding: 5px;
-	font-size: 14px;
-	font-weight: bold;
-	word-wrap: break-word;
-}
-
-.add-new-edit {
 	position: absolute;
 	top: 0;
 	left: 0;
 	padding: 5px;
 	width: 100%;
 	z-index: -1;
+}
+
+.add-new-title div {
+	padding: 5px;
+	font-family: 'Segoe UI';
+	font-size: 14px;
+	font-weight: bold;
+	word-wrap: break-word;
+}
+
+.add-new-edit {
+
 }
 
 .add-new-edit textarea {
@@ -335,12 +350,39 @@ body {
 	font-size: 14px;
 	font-weight: bold;
 	width: 100%;
+	border: 0;
 }
 
 .add-new-edit textarea:focus {
 	outline: none;
 	border: 2px solid #DFCCC6;
 	padding: 3px;
+}
+
+.add-new-list button {
+	width: 49%;
+	background-color: #986A5B;
+	padding: 5px;
+	border-radius: 5px;
+	border: 0;
+	outline: none;
+}
+
+.add-new-list button.add {
+	color: #fff;
+	background: #6B4A40;
+}
+
+.add-new-list button.cancel {
+	background: #949890;
+}
+
+.add-new-list button.add:hover {
+	background: #54463A;
+}
+
+.add-new-list button.cancel:hover {
+	background: #898B86;
 }
 
 
@@ -405,24 +447,42 @@ body {
 
 
 
-::-webkit-scrollbar {
+.list-items::-webkit-scrollbar {
   	width: 10px;
+   	height: 10px;
 }
 
-::-webkit-scrollbar {
-  	height: 10px;
-}
-
-::-webkit-scrollbar-track {
+.list-items::-webkit-scrollbar-track {
   	background: #ccc;
   	border-radius: 5px;
 }
 
-::-webkit-scrollbar-thumb {
+.list-items::-webkit-scrollbar-thumb {
   	background: #aaa;
   	border-radius: 5px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.list-items::-webkit-scrollbar-thumb:hover {
   	background: #333;
+}
+
+
+
+.lists-container::-webkit-scrollbar {
+  	width: 10px;
+   	height: 12px;
+}
+
+.lists-container::-webkit-scrollbar-track {
+  	background: #45332e;
+  	border-radius: 5px;
+}
+
+.lists-container::-webkit-scrollbar-thumb {
+  	background: #876a61;
+  	border-radius: 5px;
+}
+
+.lists-container::-webkit-scrollbar-thumb:hover {
+  	background: #947970;
 }
