@@ -28,7 +28,7 @@ function insertListAt(listIndex, positionIndex) {
 
 function displayListNames() {
 	const names = data.lists.map((list) => list.name);
-	console.log(JSON.stringify(names));
+	// console.log(JSON.stringify(names));
 }
 
 function insertItemAt(listIndex, itemIndex, positionIndex) {
@@ -46,7 +46,7 @@ function insertItemAt2(listIndex1, listIndex2, itemIndex, positionIndex) {
 
 function displayItems(listIndex) {
 	const items = data.lists[listIndex].items.map((item) => item);
-	console.log(JSON.stringify(items));
+	// console.log(JSON.stringify(items));
 }
 
 const data = {

@@ -1,3 +1,17 @@
+class Variable {
+  constructor(value, name) {
+    this._value = value;
+    this._name = name;
+  }
+  get value() {
+    return this._value;
+  }
+  set value(value) {
+  	console.log(`${this._name} => ${value}`);
+    this._value = value;
+  }
+}
+
 const mousedownQueue = [];
 
 document.body.addEventListener('mousedown', (event) => {
@@ -19,6 +33,7 @@ let scrolling = false;
 let addingNewItem = false;
 let addingTarget = null;
 let editingItemTarget = null;
+let isScrollingItems = new Variable(false, 'isScrollingItems');
 
 function mousedownHandler(event) {
 	let target = event.target;
@@ -92,7 +107,7 @@ function mousemoveHandler(event) {
 			placeholderContainerEl.style.height = `${target.firstElementChild.getBoundingClientRect().height + padding}px`;
 			placeholderContainerEl.children[0].style.width = `${target.getBoundingClientRect().width - padding}px`; // list only
 
-			console.log(placeholderContainerEl.style.position);
+			// console.log(placeholderContainerEl.style.position);
 
 			const deltaX = event.clientX - dragStartData.mouseStartX;
 			const deltaY = event.clientY - dragStartData.mouseStartY;
@@ -164,6 +179,7 @@ function mousemoveHandler(event) {
 						scrollZone = 'up';
 						if (!scrolling) {
 							scrolling = true;
+							isScrollingItems.value = true;
 							startScrollUp(parentList);
 						}
 					}
@@ -172,11 +188,13 @@ function mousemoveHandler(event) {
 						scrollZone = 'down';
 						if (!scrolling) {
 							scrolling = true;
+							isScrollingItems.value = true;
 							startScrollDown(parentList);
 						}
 					}
 				} else {
 					scrollZone = '';
+					isScrollingItems.value = false;
 				}
 			}
 
@@ -298,11 +316,6 @@ function mousemoveHandler(event) {
 	}
 }
 
-// window.addEventListener('scrolla', (event) => {
-// 	console.log(dragging);
-	
-// });
-
 function mouseupHandler(event) {
 	event.preventDefault();
 
@@ -362,7 +375,8 @@ function mouseupHandler(event) {
 		dragStartData = null;
 		dragging = false;
 		potentialDrag = false;
-		checkDragStart = true;
+		// checkDragStart.value = true;
+		// isScrollingItems.value = false;
 		return;
 	}
 
@@ -474,6 +488,8 @@ function mouseupHandler(event) {
 	dragStartData = null;
 	dragging = false;
 	potentialDrag = false;
+	checkDragStart.value = true;
+	isScrollingItems.value = false;
 }
 
 function mouseclickHandler(event) {
@@ -544,10 +560,10 @@ function addListHandler(event, n) {
 	listsEl.insertBefore(nList, listsEl.lastElementChild);
 }
 
-document.body.addEventListener('mousedown', mousedownHandler);
-document.body.addEventListener('mousemove', mousemoveHandler);
-document.body.addEventListener('mouseup', mouseupHandler);
-document.body.addEventListener('click', mouseclickHandler);
+document.addEventListener('mousedown', mousedownHandler);
+document.addEventListener('mousemove', mousemoveHandler);
+document.addEventListener('mouseup', mouseupHandler);
+document.addEventListener('click', mouseclickHandler);
 
 const container = document.querySelector('.lists-container');
 const placeholderContainerEl = createElements(
@@ -872,8 +888,9 @@ function scrollMax() {
 // scrollMax();
 
 let startedTimer = false;
-let checkDragStart = true;
-document.body.addEventListener('mousemove', (event) => {
+let checkDragStart = new Variable(true, 'checkDragStart');
+
+document.addEventListener('mousemove', (event) => {
 	if (!dragging)
 		return;
 
@@ -882,50 +899,58 @@ document.body.addEventListener('mousemove', (event) => {
 	const mouseX = event.clientX;
 	const pageWidth = container.clientWidth;
 
-	if (checkDragStart) {
-		if ((0 < mouseX) && (mouseX < 100)) {
+	if (checkDragStart.value) {
+		if (/*(0 < mouseX) && */(mouseX < 100)) {
 			if ((0 < dragStartData.mouseStartX) && (dragStartData.mouseStartX < 100)) {
 				const abs = Math.abs(mouseX - dragStartData.mouseStartX);
 				if ((abs >= 15) && mouseX < dragStartData.mouseStartX) {
-					checkDragStart = false;
+					checkDragStart.value = false;
 				}
 			}
-		} else if (((pageWidth - 100) < mouseX) && (mouseX < pageWidth)) {
+		} else if (((pageWidth - 100) < mouseX) /* && (mouseX < pageWidth)*/) {
 			if (((pageWidth - 100) < dragStartData.mouseStartX) && (dragStartData.mouseStartX < pageWidth)) {
 				const abs = Math.abs(mouseX - dragStartData.mouseStartX);
 				if ((abs >= 15) && mouseX > dragStartData.mouseStartX) {
-					checkDragStart = false;
+					checkDragStart.value = false;
 				}
 			}
 		} else {
-			checkDragStart = false;
+			checkDragStart.value = false;
 		}
 	}
 
-	if (checkDragStart)
+	if (checkDragStart.value) {
+		console.log('a');
 		return;
+	}
 
-	if ((0 < mouseX) && (mouseX < 100)) {
+	if (isScrollingItems.value) {
+		console.log('b');
+		return;
+	}
+	console.log('...');
+
+	if (/*(0 < mouseX) &&*/ (mouseX < 100)) {
 		if (scrollX !== 0) {
 			scrollZone = 'left';
-			if (!scrolling) {
-				scrolling = true;
+			//if (!scrolling) {
+				// scrolling = true;
 				if (startedTimer === false) {
 					startScrollLeft();
 					startedTimer = true;
 				}
-			}
+			//}
 		}
-	} else if (((pageWidth - 100) < mouseX) && (mouseX < pageWidth)) {
+	} else if (((pageWidth - 100) < mouseX) /*&& (mouseX < pageWidth)*/) {
 		if ((scrollX + pageWidth) !== widthX) {
 			scrollZone = 'right';
-			if (!scrolling) {
-				scrolling = true;
+			//if (!scrolling) {
+				//scrolling = true;
 				if (startedTimer === false) {
 					startScrollRight();
 					startedTimer = true;
 				}
-			}
+			//}
 		}
 	} else {
 		scrollZone = '';
